@@ -1,0 +1,38 @@
+---
+title: "Group Project Test"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+
+# set working directory to where you stored the .csv file
+setwd("/Users/sarahchristensen/Documents/Harvard/Fall2021/BST260/GroupProject") 
+
+t1 <- read.csv("data1.csv")
+
+# Determine which duplicates will be the best to keep 
+unique(t1$COU)
+unique(t1$Country) #keep
+unique(t1$IND) #keep
+unique(t1$Indicator) #keep
+unique(t1$SEX) 
+unique(t1$Sex) #keep
+unique(t1$AGE)
+unique(t1$Age.Group) #keep
+unique(t1$TIME)
+unique(t1$Time) #keep
+unique(t1$Unit.Code)
+unique(t1$Unit) #keep
+unique(t1$PowerCode.Code)
+unique(t1$PowerCode)
+unique(t1$Reference.Period.Code)
+unique(t1$Reference.Period)
+unique(t1$Flag.Codes)
+unique(t1$Flags) #keep
+
+t1 <- t1 %>% 
+  select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
+```
+
+
