@@ -1,5 +1,5 @@
 ---
-title: "Group Project Test"
+title: "Read In Data"
 output: html_document
 ---
 
@@ -7,7 +7,7 @@ output: html_document
 library(dplyr)
 
 # set working directory to where you stored the .csv file
-setwd("/Users/sarahchristensen/Documents/Harvard/Fall2021/BST260/GroupProject") 
+setwd("/Users/sarahchristensen/Documents/Harvard/Fall2021/BST260/BST260FinalProject") 
 
 t1 <- read.csv("data1.csv")
 
