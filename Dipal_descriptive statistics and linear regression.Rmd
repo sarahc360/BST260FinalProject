@@ -1,0 +1,116 @@
+---
+title: "Dipal_descriptive_stats_regression"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Loading the data:
+```{r}
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+
+t1 <- read.csv("data1.csv")
+
+# Select specific variables and filter in only OECD countries
+OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdon", "United States")
+
+t1 <- t1 %>% 
+  select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags) %>%
+  filter (Country %in% OECD_label)
+```
+
+Creating a df with the variables of interest:
+
+```{r}
+# Isolate variables of interest
+# Removing the age group variable (and filtering for total age group when appropriate)
+# In order to merge into one dataframe, time variable was isolated only to 2018 for most variables as that is the most recent year with the most complete data. 
+
+t1 <- t1 %>%
+  filter(Time %in% c("Latest year", "2018"))
+
+#*** Time for the unpaid, paid and total time is "Latest Year"
+unpaid_time <- t1 %>%
+  filter(Indicator == "Time spent in unpaid work, by sex") %>%
+  select(Country, Sex, Value) %>%      
+  rename(unpaid_time = Value)
+
+paid_time <- t1 %>%
+  filter(Indicator == "Time spent in paid work, by sex") %>%
+  select(Country, Sex, Value) %>%
+  rename(paid_time = Value)
+
+total_time <- t1 %>%
+  filter(Indicator == "Time spent in total work, by sex") %>%
+  select(Country, Sex, Value) %>%
+  rename(total_time = Value)
+
+agriculture_work <- t1 %>%
+  filter(Indicator == "Share of employed working in agriculture, by sex") %>%
+  select(Country, Sex, Value) %>%       
+  rename(agriculture_work = Value)
+
+industry_work <- t1 %>%
+  filter(Indicator == "Share of employed working in industry, by sex") %>%
+  select(Country, Sex, Value) %>%     
+  rename(industry_work = Value)
+
+services_work <- t1 %>%
+  filter(Indicator == "Share of employed working in services, by sex") %>%
+  select(Country, Sex, Value) %>%
+  rename(services_work = Value)
+
+maternity_leave <- t1 %>%
+  filter(Indicator == "Length of maternity leave") %>%
+  select(Country, Sex, Value) %>%
+  rename(maternity_leave = Value)
+
+leave_job_protection <- t1 %>%
+  filter(Indicator == "Length of parental leave with job protection") %>%
+  select(Country, Sex, Value) %>%
+  rename(leave_job_protection = Value)
+
+total_paid_leave <- t1 %>%
+  filter(Indicator == "Total length of paid maternity and parental leave") %>%
+  select(Country, Sex, Value) %>%
+  rename(total_paid_leave = Value)
+
+paternal_leave <- t1 %>%
+  filter(Indicator == "Length of paid father-specific leave") %>%
+  select(Country, Sex, Value) %>%
+  rename(paternal_leave = Value)
+
+share_managers <- t1 %>%
+  filter(Indicator == "Share of employed who are managers, by sex") %>%
+  select(Country, Sex, Value) %>%
+  rename(share_managers = Value)
+
+female_share_boards <- t1 %>%
+  filter(Indicator == "Female share of seats on boards of the largest publicly listed companies") %>%
+  select(Country, Sex, Value) %>%
+  rename(female_share_boards = Value)
+
+share_involuntary_parttime <- t1 %>%
+  filter(Indicator == "Share of employed in involuntary part-time employment, by sex and age group",
+         Age.Group=="Total") %>%
+  select(Country, Sex, Value) %>%
+  rename(share_involunttary_parttime = Value)
+
+share_parttime <- t1 %>%
+  filter(Indicator == "Share of employed in part-time employment, by sex and age group",
+         Age.Group=="Total") %>%
+  select(Country, Sex, Value) %>%
+  rename(share_parttime = Value)
+
+# Create new dataframe
+data_list <- list(unpaid_time, paid_time, total_time, agriculture_work, industry_work, services_work, maternity_leave, leave_job_protection, total_paid_leave, paternal_leave, share_managers, female_share_boards, share_involuntary_parttime, share_parttime)
+
+new_data <- data_list %>% 
+  reduce(left_join, by=c("Country", "Sex")) %>%
+  # Create ratio variable for proportion of time spent in unpaid labor
+  mutate(prop_unpaid = unpaid_time/total_time)
+```
