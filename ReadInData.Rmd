@@ -35,4 +35,34 @@ t1 <- t1 %>%
   select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
 ```
 
+To filter *only* OECD countries:
+```{r}
+OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdon", "United States")
 
+t1 <- t1 %>%
+  filter (Country %in% OECD_label)
+```
+
+Creating a variable for proportion of time spent in unpaid work (minutes per day) / time spent in total work (minutes per day):
+
+```{r}
+library(tidyr)
+
+# Isolate variables of interest
+unpaid_time <- t1 %>%
+  filter(Indicator == "Time spent in unpaid work, by sex") %>%
+  select(Country, Sex, Age.Group, Time, Value) %>%
+  rename(unpaid_time = Value)
+
+total_time <- t1 %>%
+  filter(Indicator == "Time spent in total work, by sex") %>%
+  select(Country, Sex, Age.Group, Time, Value) %>%
+  rename(total_time = Value)
+
+# Create new dataframe
+new_data <- merge(unpaid_time, total_time, by=c("Country", "Sex", "Age.Group", "Time"))
+
+# Create ratio variable
+new_data <- new_data %>%
+  mutate(prop_unpaid = unpaid_time/total_time)
+```
