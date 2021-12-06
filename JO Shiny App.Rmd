@@ -43,35 +43,34 @@ t1 <- t1 %>%
 
 **Data wrangling to create datasets of interest**
 ```{r}
+OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
 
-    OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
-
-t1 <- t1 %>%
+jodat <- t1 %>%
     filter (Country %in% OECD_label) %>%
     mutate(Time=as.integer(Time), Value=as.numeric(Value))
 
 #creating dataframes with indicators of interest for Shiny app analysis
 #creating dataframe t2 for line plot
-t2 <- t1 %>%
+jodat2 <- jodat %>%
     filter(Indicator %in% c('Labour force participation rate, by sex and age group ', 'Share of employed who are managers, by sex', 'Female share of seats on boards of the largest publicly listed companies', 'Female share of seats in national parliaments'))
 
 #creating dataframe t3 for scatterplots
-female_labour_force_participation <- t2 %>%
+female_labour_force_participation <- jodat2 %>%
   filter(Indicator == 'Labour force participation rate, by sex and age group ' & Sex == "Women" & Age.Group=="Total") %>%
   select(Country, Value, Time) %>%
   rename(female_labour_force_participation = Value)
 
-female_share_boards <- t2 %>%
+female_share_boards <- jodat2 %>%
   filter(Indicator == 'Female share of seats on boards of the largest publicly listed companies' & Sex == "Women" & Age.Group=="Total") %>%
   select(Country, Value, Time) %>%
   rename(female_share_boards = Value)
 
-female_share_parliament <- t2 %>%
+female_share_parliament <- jodat2 %>%
   filter(Indicator == 'Female share of seats in national parliaments' & Sex == "Women" & Age.Group=="Total") %>%
   select(Country, Value, Time) %>%
   rename(female_share_parliament = Value)
 
-female_share_managers <- t2 %>%
+female_share_managers <- jodat2 %>%
   filter(Indicator == 'Share of employed who are managers, by sex' & Sex == "Women" & Age.Group=="Total") %>%
   select(Country, Value, Time) %>%
   rename(female_share_managers = Value)
@@ -79,7 +78,7 @@ female_share_managers <- t2 %>%
 # Create new dataframe for scatterplots
 data_list <- list(female_labour_force_participation, female_share_boards, female_share_parliament, female_share_managers)
 
-t3 <- data_list %>% reduce(left_join, by=c("Country", "Time"))
+jodat3 <- data_list %>% reduce(left_join, by=c("Country", "Time"))
 ```
 
 **Shiny App**
@@ -198,7 +197,7 @@ ui <- fluidPage(
 # Define server logic
 server <- function(input, output) {
   output$LinePlot <- renderPlot({
-    t2 %>% 
+    jodat2 %>% 
       filter(Country %in% input$country & Indicator %in% c('Labour force participation rate, by sex and age group ') & Age.Group %in% input$age & !is.na(Value)) %>%
       ggplot(aes(x=Time, y=Value, color=Sex)) + 
       geom_line() + 
@@ -210,7 +209,7 @@ server <- function(input, output) {
       theme(plot.title = element_text(size = 15, face = "bold"))
   })
   output$Scatterplot1 <- renderPlot({
-    t3 %>% 
+    jodat3 %>% 
       filter(Time %in% input$year1 & Country %in% input$country1 & !is.na(female_labour_force_participation) & !is.na(female_share_parliament)) %>%
       ggplot(aes_string(x="female_labour_force_participation", y="female_share_parliament", color="Country")) + 
       geom_point() + 
@@ -222,7 +221,7 @@ server <- function(input, output) {
       theme(plot.title = element_text(size = 15, face = "bold"))
   })
   output$Scatterplot2 <- renderPlot({
-    t3 %>% 
+    jodat3 %>% 
       filter(Time %in% input$year2 & Country %in% input$country2 & !is.na(female_labour_force_participation) & !is.na(female_share_boards)) %>%
       ggplot(aes_string(x="female_labour_force_participation", y="female_share_boards", color="Country")) + 
       geom_point() + 
@@ -234,7 +233,7 @@ server <- function(input, output) {
       theme(plot.title = element_text(size = 15, face = "bold"))
   })
 output$Scatterplot3 <- renderPlot({
-    t3 %>% 
+    jodat3 %>% 
       filter(Time %in% input$year3 & Country %in% input$country3 & !is.na(female_labour_force_participation) & !is.na(female_share_managers)) %>%
       ggplot(aes_string(x="female_labour_force_participation", y="female_share_managers", color="Country")) + 
       geom_point() + 
