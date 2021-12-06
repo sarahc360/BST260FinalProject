@@ -8,15 +8,21 @@ Model "total length of paid maternity and parental leave" by using knn, qda, and
 ```{r}
 library(fastDummies)
 library(dplyr)
+library(tidyverse)
+library(splitstackshape)
+library(caret)
+library(e1071)
+library(pROC)
+library(gtools)
 
 # Use to create variables of interest
 scdat <- t1 %>% filter(Age.Group == "Total")
 
-# Outcome of interest: PMLeave (Total length of paid maternity and parental leave)
+# Outcome of interest: TPMPL (Total length of paid maternity and parental leave)
 scdatTPMPL <- scdat %>% 
   filter(Indicator == "Total length of paid maternity and parental leave") %>%
   mutate(TPMPL = Value) %>%
-  select(Country, Time, TPMPL)
+  dplyr::select(Country, Time, TPMPL)
 
 # Predictors: (all are related to women in the workforce and women in policy making positions)
 # LFRm_w (Labour force participation ratio (men/women)) 
@@ -24,25 +30,25 @@ scdatLFRm_w <- scdat %>%
   filter(Indicator == "Labour force participation rate, by sex and age group ") %>% 
   spread(Sex, Value) %>% 
   mutate(LFRm_w = Men/Women) %>%
-  select(Country, Time, LFRm_w)
+  dplyr::select(Country, Time, LFRm_w)
 
 # FNP (female share of seats in national parliaments)
 scdatFNP <- scdat %>% 
   filter(Indicator == "Female share of seats in national parliaments") %>%
   mutate(FNP = Value) %>%
-  select(Country, Time, FNP)
+  dplyr::select(Country, Time, FNP)
 
 # FM (share of female managers)
 scdatFM <- scdat %>%
   filter(Indicator == "Share of female managers") %>%
   mutate(FM = Value) %>%
-  select(Country, Time, FM)
+  dplyr::select(Country, Time, FM)
 
 # FBS (female share of seats on boards of the largest publicly listed companies)
 scdatFBS <- scdat %>% 
   filter(Indicator == "Female share of seats on boards of the largest publicly listed companies") %>% 
   mutate(FBS = Value) %>%
-  select(Country, Time, FBS)
+  dplyr::select(Country, Time, FBS)
 
 # Year 
 # (Time variable)
@@ -51,10 +57,19 @@ scdatFBS <- scdat %>%
 scdata_list <- list(scdatTPMPL, scdatLFRm_w, scdatFNP, scdatFM, scdatFBS)
 scdatALL <- scdata_list %>% 
   reduce(left_join, by = c("Country", "Time")) %>% 
-  select(Country, Time, TPMPL, LFRm_w, FNP, FM, FBS)
+  dplyr::select(Country, Time, TPMPL, LFRm_w, FNP, FM, FBS)
 
 # Finally, add dummy variables for Country to use in modeling
 scdatALL <- dummy_cols(scdatALL, select_columns = "Country")
+# Edit dummy variables so nome of the names have a space in them
+
+scdatALL <- scdatALL %>% 
+  rename(Country_UnitedStates = `Country_United States`) %>%
+  rename(Country_UnitedKingdom = `Country_United Kingdom`) %>%
+  rename(Country_SlovakRepublic = `Country_Slovak Republic`) %>%
+  rename(Country_NewZealand = `Country_New Zealand`) %>%
+  rename(Country_CzechRepublic = `Country_Czech Republic`) %>%
+  rename(Country_CostaRica = `Country_Costa Rica`)
 # (Use only Country_Australia through Country_United Kingdom with Country_UnitedStates as the referent)
 
 # Convert Time to be a numeric variable
@@ -62,6 +77,45 @@ scdatALL$Time <- as.numeric(scdatALL$Time)
 ```
 
 Now that we have our data cleaned, we can fit our machine learning models. 
+
+```{r}
+# Explore the outcome data (in weeks)
+summary(scdatALL$TPMPL)
+
+# Break data into training and test sets
+set.seed(1)
+
+scx <- stratified(scdatALL, "TPMPL", 0.6, keep.rownames = TRUE)
+sctrain_set <- scx %>% dplyr::select(-rn)
+sctrain_index <- as.numeric(scx$rn)
+sctest_set <- scdatALL[-sctrain_index,]
+
+dim(sctrain_set)
+dim(sctest_set)
+
+
+# Regression
+scglm <- glm(data = sctrain_set, TPMPL ~ . -Country_UnitedStates)
+summary(scglm)
+# p_hat_scglm <- predict(scglm, newdata = sctest_set, type = "response")
+
+
+# kNN
+scknn <- knn3(data = sctrain_set, TPMPL ~ . -Country_UnitedStates, k = 12)
+summary(scknn)
+# f_hat_scknn <- predict(scknn, newdata = sctest_set)[,2]
+
+
+# QDA
+
+
+
+# LDA
+
+
+
+```
+
 
 
 

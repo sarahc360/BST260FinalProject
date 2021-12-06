@@ -32,7 +32,7 @@ unique(ALLCOUNTRY$Flag.Codes)
 unique(ALLCOUNTRY$Flags) #keep
 
 ALLCOUNTRY <- ALLCOUNTRY %>% 
-  select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
+  dplyr::select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
 ```
 
 To filter *only* OECD countries:
@@ -51,12 +51,12 @@ library(tidyr)
 # Isolate variables of interest
 unpaid_time <- t1 %>%
   filter(Indicator == "Time spent in unpaid work, by sex") %>%
-  select(Country, Sex, Age.Group, Time, Value) %>%
+  dplyr::select(Country, Sex, Age.Group, Time, Value) %>%
   rename(unpaid_time = Value)
 
 total_time <- t1 %>%
   filter(Indicator == "Time spent in total work, by sex") %>%
-  select(Country, Sex, Age.Group, Time, Value) %>%
+  dplyr::select(Country, Sex, Age.Group, Time, Value) %>%
   rename(total_time = Value)
 
 # Create new dataframe
