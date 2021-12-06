@@ -79,8 +79,7 @@ female_share_managers <- t2 %>%
 # Create new dataframe for scatterplots
 data_list <- list(female_labour_force_participation, female_share_boards, female_share_parliament, female_share_managers)
 
-t3 <- data_list %>% 
-  reduce(left_join, by=c("Country", "Time"))
+t3 <- data_list %>% reduce(left_join, by=c("Country", "Time"))
 ```
 
 **Shiny App**
