@@ -3,26 +3,241 @@ title: "Machine Learning"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+##### Data pull from OECD data base
+
+```{r, message=FALSE, warning=FALSE}
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+
+ALLCOUNTRY <- read.csv("data1.csv")
+
+ALLCOUNTRY <- ALLCOUNTRY %>% 
+  dplyr::select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
+
+# Select specific variables and filter in only OECD countries
+OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
+
+t1 <- ALLCOUNTRY %>% 
+  dplyr::select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags) %>%
+  filter (Country %in% OECD_label)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+##### Data wrangling to organize data frame with latest data
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r}
+# Isolate variables of interest
+# Removing the age group variable (and filtering for total age group when appropriate)
+# In order to merge into one dataframe, time variable was isolated only to 2018 for most variables as that is the most recent year with the most complete data. 
 
-```{r cars}
-summary(cars)
+t1_latest <- t1 %>%
+  filter(Time %in% c("Latest year", "2018"))
+
+#*** Time for the unpaid, paid and total time is "Latest Year"
+unpaid_time <- t1_latest %>%
+  filter(Indicator == "Time spent in unpaid work, by sex") %>%
+  dplyr::select(Country, Sex, Value) %>%      
+  rename(unpaid_time = Value)
+
+paid_time <- t1_latest %>%
+  filter(Indicator == "Time spent in paid work, by sex") %>%
+  dplyr:::select(Country, Sex, Value) %>%
+  rename(paid_time = Value)
+
+total_time <- t1_latest %>%
+  filter(Indicator == "Time spent in total work, by sex") %>%
+  dplyr::select(Country, Sex, Value) %>%
+  rename(total_time = Value)
+
+share_managers <- t1_latest %>%
+  filter(Indicator == "Share of employed who are managers, by sex") %>%
+  dplyr::select(Country, Sex, Value) %>%
+  rename(share_managers = Value)
+
+share_involuntary_parttime <- t1_latest %>%
+  filter(Indicator == "Share of employed in involuntary part-time employment, by sex and age group",
+         Age.Group=="Total") %>%
+  dplyr::select(Country, Sex, Value) %>%
+  rename(share_involunttary_parttime = Value)
+
+share_parttime <- t1_latest %>%
+  filter(Indicator == "Share of employed in part-time employment, by sex and age group",
+         Age.Group=="Total") %>%
+  dplyr::select(Country, Sex, Value) %>%
+  rename(share_parttime = Value)
+
+# Create new dataframe
+kf_data_list <- list(unpaid_time, paid_time, total_time, share_managers, share_involuntary_parttime, share_parttime)
+
+kf_new_data <- kf_data_list %>% 
+  reduce(left_join, by=c("Country", "Sex")) %>%
+  # Create ratio variable for proportion of time spent in unpaid labor
+  mutate(prop_unpaid = unpaid_time/total_time)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+##### Data wrangling to create a data frame with categorical and continuous predictors for machine learning 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+## Categorize countries into continents
+europe <- c("Austria","Belgium","Czech Republic","Denmark","Estonia","Finland","France", "Germany","Greece","Hungary","Iceland","Ireland", "Italy","Latvia","Lithuania","Luxembourg","Netherlands","Norway","Poland","Portugal","Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland","United Kingdom") ## region 1
+north_america <- c("Canada","United States","Costa Rica", "Mexico") ## region 2
+south_america <- c("Chile","Colombia") ## region 3
+middle_east <- c("Israel","Turkey") ## region 4
+oceania <- c("Australia","New Zealand") ## region 5
+asia <- c("Japan", "Korea") ## region 6
+
+## Create data frame for model data, create region variable, and assign countries a region value
+kf_model_data <- kf_new_data %>% mutate(Region = ifelse(Country %in% europe, 1,
+                                                  ifelse(Country %in% north_america, 2,
+                                                  ifelse(Country %in% south_america,3,
+                                                  ifelse(Country %in% middle_east, 4,
+                                                  ifelse(Country %in% oceania, 5,
+                                                  ifelse(Country %in% asia, 6, NA)))))))
+
+## Code sex as a binary variable
+kf_model_data <- kf_model_data %>% mutate(Sex = factor(Sex, levels=c("Men","Women"), labels=c("0","1")))
+
+## Code region as a factor
+kf_model_data <- kf_model_data %>% mutate(Region = factor(Region))
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+##### Regression Tree Analysis to predict proportion of unpaid work among total work
+
+```{r,message=FALSE, warning=FALSE}
+library(tree)
+library(MASS)
+library(caret)
+
+## set up training and test sets
+set.seed(1)
+unpaid_index_train = createDataPartition(y = kf_model_data$prop_unpaid,
+                                  times = 1, p = 0.5, list = FALSE)
+unpaid_train_set = slice(kf_model_data, unpaid_index_train)
+unpaid_test_set = slice(kf_model_data, -unpaid_index_train)
+```
+
+
+##### Regression Tree Code for Proportion of Total Work Time that is Unpaid
+
+```{r}
+## make regression tree using tree predicting proportion of unpaid time using variables with the fewest NAs
+
+set.seed(1)
+
+fit_tree1 <- tree(prop_unpaid ~ Region + Sex + share_managers + share_involunttary_parttime + share_parttime, data = unpaid_train_set)
+fit_tree1
+summary(fit_tree1)
+
+plot(fit_tree1, type="uniform")
+text(fit_tree1, pretty = 0, cex = 1)
+
+## calculate proportion of unpaid time predictions in test set
+preds_tree1 <- predict(fit_tree1, newdata = unpaid_test_set)
+summary(preds_tree1)
+mean((preds_tree1 - unpaid_test_set$prop_unpaid)^2)
+
+## look at reasonable tree depth for given dataset
+set.seed(1)
+cv_data <- cv.tree(fit_tree1)
+plot(cv_data$size, cv_data$dev, type = "b")
+
+```
+
+##### Decision tree using rpart, output boils down to sex as the predictor
+
+```{r, message=FALSE, warning=FALSE}
+## make regression tree using rpart
+library(rpart)
+library(rpart.plot)
+
+set.seed(1)
+
+fit_rpart1 <- rpart(prop_unpaid ~ Region + Sex + share_managers + share_involunttary_parttime + share_parttime, data = unpaid_train_set)
+summary(fit_rpart1)
+
+rpart.plot(fit_rpart1, digits=4)
+
+plotcp(fit_rpart1)
+min_cp = fit_rpart1$cptable[which.min(fit_rpart1$cptable[,"xerror"]),"CP"]
+min_cp
+
+p <- prune(fit_rpart1, cp = 0.08)
+rpart.plot(p, digits = 4)
+```
+
+
+##### Regression Tree Code for Minutes of Unpaid Time
+
+```{r,message=FALSE, warning=FALSE}
+library(tree)
+library(MASS)
+library(caret)
+
+## set up training and test sets
+set.seed(1)
+minutes_index_train = createDataPartition(y = kf_model_data$unpaid_time,
+                                  times = 1, p = 0.5, list = FALSE)
+minutes_train_set = slice(kf_model_data, minutes_index_train)
+minutes_test_set = slice(kf_model_data, -minutes_index_train)
+```
+
+
+#### Using tree and rpart
+
+```{r}
+## make regression tree using tree predicting minutes unpaid time
+
+set.seed(1)
+
+minutes_fit_tree <- tree(unpaid_time ~ Region + Sex + share_managers + share_involunttary_parttime + share_parttime, data = minutes_train_set)
+minutes_fit_tree
+summary(minutes_fit_tree)
+
+plot(minutes_fit_tree, type="uniform")
+text(minutes_fit_tree, pretty = 0, cex = 1)
+
+## calculate unpaid time predictions in test set
+preds_minutes_tree <- predict(minutes_fit_tree, newdata = minutes_test_set)
+summary(preds_minutes_tree)
+mean((preds_minutes_tree - minutes_test_set$unpaid_time)^2)
+
+## find ideal number of nodes
+minutes_data <- cv.tree(minutes_fit_tree)
+plot(minutes_data$size, minutes_data$dev, type = "b")
+
+## prune to 2 nodes
+prune_minutes = prune.tree(minutes_fit_tree, best = 2)
+
+## find test set estimates with pruned tree
+preds_prune <- predict(prune_minutes, newdata = minutes_test_set)
+summary(preds_prune)
+mean((preds_prune - minutes_test_set$unpaid_time)^2)
+
+##using rpart
+minutes_fit_rpart <- rpart(unpaid_time ~ Region + share_managers + share_involunttary_parttime + share_parttime, data = minutes_train_set)
+summary(minutes_fit_rpart)
+
+## rpart plot
+rpart.plot(minutes_fit_rpart, digits=4)
+
+## find cp for rplot
+plotcp(minutes_fit_rpart)
+min_cp = minutes_fit_rpart$cptable[which.min(minutes_fit_rpart$cptable[,"xerror"]),"CP"]
+min_cp
+
+## prune rpart tree
+p1 <- prune(minutes_fit_rpart, cp = 0.14)
+rpart.plot(p1, digits = 4)
+
+## calculate unpaid time predictions in test set
+preds_minutes_rpart <- predict(minutes_fit_rpart, newdata = minutes_test_set)
+summary(preds_minutes_rpart)
+mean((preds_minutes_rpart - minutes_test_set$unpaid_time)^2)
+
+preds_prune_rpart <- predict(p1, newdata = minutes_test_set)
+summary(preds_prune_rpart)
+mean((preds_prune_rpart - minutes_test_set$unpaid_time)^2)
+```
