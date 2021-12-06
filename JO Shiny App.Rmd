@@ -42,7 +42,7 @@ t1 <- t1 %>%
 ```
 
 **Data wrangling to create datasets of interest**
-    ```{r}
+```{r}
 
     OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
 
@@ -218,7 +218,7 @@ server <- function(input, output) {
       scale_x_continuous(breaks = seq(0, 100, 10), limits = c(0, 100)) +
       xlab("Female Labor Force Participation Rate (%)") +
       ylab("Female Share of Seats in National Parliament (%)") +
-      ggtitle(paste("Female Labor Force Participation Rate vs. Female Share of Seats in Natl Parliament in", input$year1)) +
+      ggtitle(paste("Female Labor Force Participation Rate vs. Share of Seats \n in Natl Parliament in", input$year1)) +
       theme(plot.title = element_text(size = 15, face = "bold"))
   })
   output$Scatterplot2 <- renderPlot({
@@ -230,7 +230,7 @@ server <- function(input, output) {
       scale_x_continuous(breaks = seq(0, 100, 10), limits = c(0, 100)) +
       xlab("Female Labor Force Participation Rate (%)") +
       ylab("Female Share of Seats on Boards of Largest Publicly Listed Companies (%)") +
-      ggtitle(paste("Female Labor Force Participation Rate vs. Female Share of Seats on Boards of Largest Publicly Listed Companies in", input$year2)) +
+      ggtitle(paste("Female Labor Force Participation Rate vs. Share of Seats \n on Boards of Largest Publicly Listed Companies in", input$year2)) +
       theme(plot.title = element_text(size = 15, face = "bold"))
   })
 output$Scatterplot3 <- renderPlot({
@@ -242,7 +242,7 @@ output$Scatterplot3 <- renderPlot({
       scale_x_continuous(breaks = seq(0, 100, 10), limits = c(0, 100)) +
       xlab("Female Labor Force Participation Rate (%)") +
       ylab("Female Share of Employed Who are Managers (%)") +
-      ggtitle(paste("Female Labor Force Participation Rate vs. Female Share of Employed Who are Managers in", input$year3)) +
+      ggtitle(paste("Female Labor Force Participation Rate vs. Share of \n Employed Who are Managers in", input$year3)) +
       theme(plot.title = element_text(size = 15, face = "bold"))
   })
 }
