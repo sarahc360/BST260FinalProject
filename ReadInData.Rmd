@@ -9,29 +9,29 @@ library(dplyr)
 # set working directory to where you stored the .csv file
 setwd("/Users/sarahchristensen/Documents/Harvard/Fall2021/BST260/BST260FinalProject") 
 
-t1 <- read.csv("data1.csv")
+ALLCOUNTRY <- read.csv("data1.csv")
 
 # Determine which duplicates will be the best to keep 
-unique(t1$COU)
-unique(t1$Country) #keep
-unique(t1$IND) #keep
-unique(t1$Indicator) #keep
-unique(t1$SEX) 
-unique(t1$Sex) #keep
-unique(t1$AGE)
-unique(t1$Age.Group) #keep
-unique(t1$TIME)
-unique(t1$Time) #keep
-unique(t1$Unit.Code)
-unique(t1$Unit) #keep
-unique(t1$PowerCode.Code)
-unique(t1$PowerCode)
-unique(t1$Reference.Period.Code)
-unique(t1$Reference.Period)
-unique(t1$Flag.Codes)
-unique(t1$Flags) #keep
+unique(ALLCOUNTRY$COU)
+unique(ALLCOUNTRY$Country) #keep
+unique(ALLCOUNTRY$IND) #keep
+unique(ALLCOUNTRY$Indicator) #keep
+unique(ALLCOUNTRY$SEX) 
+unique(ALLCOUNTRY$Sex) #keep
+unique(ALLCOUNTRY$AGE)
+unique(ALLCOUNTRY$Age.Group) #keep
+unique(ALLCOUNTRY$TIME)
+unique(ALLCOUNTRY$Time) #keep
+unique(ALLCOUNTRY$Unit.Code)
+unique(ALLCOUNTRY$Unit) #keep
+unique(ALLCOUNTRY$PowerCode.Code)
+unique(ALLCOUNTRY$PowerCode)
+unique(ALLCOUNTRY$Reference.Period.Code)
+unique(ALLCOUNTRY$Reference.Period)
+unique(ALLCOUNTRY$Flag.Codes)
+unique(ALLCOUNTRY$Flags) #keep
 
-t1 <- t1 %>% 
+ALLCOUNTRY <- ALLCOUNTRY %>% 
   select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
 ```
 
@@ -39,7 +39,7 @@ To filter *only* OECD countries:
 ```{r}
 OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
 
-t1 <- t1 %>%
+t1 <- ALLCOUNTRY %>%
   filter (Country %in% OECD_label)
 ```
 
