@@ -6,7 +6,6 @@ output: html_document
 ```{r}
 library(dplyr)
 library(ggplot2)
-library(RColorBrewer)
 ```
 
 
@@ -83,24 +82,31 @@ Unpaid_map<- left_join(new_unpaid_data, world_map, by = "Country")
 new_unpaid_map <- Unpaid_map%>% filter (!Country %in% c("Australia", "Canada", "Japan", "Korea", "United States", "Mexico", "New Zealand"))
 
 women_labels <- new_unpaid_map %>%
-  filter(Sex == "Women", prop_unpaid > 0.5) %>%
+  filter(Sex == "Women") %>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
             long = mean(long))
 
 men_labels <- new_unpaid_map %>%
-  filter(Sex == "Men", prop_unpaid > 0.5) %>%
+  filter(Sex == "Men") %>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
             long = mean(long))
+
+new_unpaid_map <- new_unpaid_map %>% 
+  mutate(manual_fill = cut(prop_unpaid, breaks = c(0, 0.2, 0.4, 0.6,0.8),
+                           labels = c("<=0.2", ">0.2", ">0.4", 
+                                      ">0.6"),
+                           right = TRUE))
 
 
 #Proportion of time spent in unpaid work 
 p1 <- new_unpaid_map %>% filter(Sex == "Women") %>%
   ggplot(aes(x = long, y = lat)) +
-  geom_polygon(aes(fill = prop_unpaid, group = group), color = "black")+
-  scale_color_manual(name = "Proportion of Unpaid Work by Women", values = cbPalette) +
-  geom_text_repel(data = women_labels, aes(long, lat, label = Country), color = "orange") +
+  geom_polygon(aes(fill = manual_fill, group=group), color = "white")  +
+  scale_fill_manual(values = c("plum2","lightcoral", "steelblue2")) +
+  coord_fixed(1) +
+  geom_text_repel(min.segment.length = Inf, data = women_labels, aes(long, lat, label = Country), color = "black") +
       theme(legend.position = "none",
         panel.grid.major = element_blank(), 
         panel.background = element_blank(),
@@ -108,19 +114,103 @@ p1 <- new_unpaid_map %>% filter(Sex == "Women") %>%
         axis.text = element_blank(),
         axis.ticks = element_blank())
 
-
 p2 <- new_unpaid_map %>% filter(Sex == "Men") %>%
   ggplot(aes(x = long, y = lat)) +
-  geom_polygon(aes(fill = prop_unpaid, group = group), color = "black") +
-    scale_colour_manual(name = "Proportion of Unpaid Work by Men", values = cbPalette) +
-  geom_text_repel(data = men_labels, aes(long, lat, label = Country), color = "orange") +
+   geom_polygon(aes(fill = manual_fill, group = group), color = "white") +
+  scale_fill_manual(name = "Proportion of Unpaid Work", values = c("plum2","lightcoral", "steelblue2")) +
+  geom_text_repel(min.segment.length = Inf, data = men_labels, aes(long, lat, label = Country), color = "black") +
+  coord_fixed(1) +
       theme(panel.grid.major = element_blank(), 
         panel.background = element_blank(),
         axis.title = element_blank(), 
         axis.text = element_blank(),
         axis.ticks = element_blank())+
-scale_fill_gradient(limits = c(0.05, 0.70), oob = scales::squish)
-library(egg)
+  ggtitle("Proportion of Time Spent in Unpaid Work by Women(Left) & Men(Right)")+
+   theme(plot.title = element_text(hjust = 0.62, size = 14))
+
+        
 ggarrange(p1, p2, nrow = 1)
+```
+
+
+
+```{r}
+
+women_in_parliament_map <- full_dataset%>%
+  filter(Indicator == "Female share of seats in national parliaments") %>%
+  select(Country, Sex, Age.Group, Time, Value) %>%
+  rename(parliament_female_share_seats = Value)
+
+#Proportion of women in parliament in the world  
+# Pulling out world map data frame
+world_map = map_data("world")%>%
+  rename(Country="region")
+
+#Recoding names
+
+country_key = data.frame(rbind(c("United Kingdom", "UK"), 
+                               c("United States", "USA")))
+names(country_key) = c("Merged1", "map")
+
+# Create named vector for recoding country names
+recode_map <- country_key$Merged1; names(recode_map) = country_key$map
+
+# Recode country names in world map data to match with Merged1 Dataset
+world_map <- world_map %>%
+  mutate(Country = recode(Country, !!!recode_map))
+
+parliament_map<- left_join(women_in_parliament_map, world_map, by = "Country")
+
+women_labels <- parliament_map %>%
+  group_by(Country) %>%
+  summarize(lat = mean(lat),
+            long = mean(long))
+
+p3 <- parliament_map %>% filter(Time == 2016) %>%
+  ggplot(aes(x = long, y = lat)) +
+  geom_polygon(aes(fill = parliament_female_share_seats, group=group), color = "white") 
+
+p3
+
+
+```
+
+```{r}
+female_managers_map <- full_dataset%>%
+  filter(Indicator == "Share of female managers") %>%
+  select(Country, Sex, Age.Group, Time, Value) %>%
+  rename(Share_of_female_managers = Value)
+
+#Proportion of women in parliament in the world  
+# Pulling out world map data frame
+world_map = map_data("world")%>%
+  rename(Country="region")
+
+#Recoding names
+
+country_key = data.frame(rbind(c("United Kingdom", "UK"), 
+                               c("United States", "USA")))
+names(country_key) = c("Merged1", "map")
+
+# Create named vector for recoding country names
+recode_map <- country_key$Merged1; names(recode_map) = country_key$map
+
+# Recode country names in world map data to match with Merged1 Dataset
+world_map <- world_map %>%
+  mutate(Country = recode(Country, !!!recode_map))
+
+female_man_map<- left_join(female_managers_map, world_map, by = "Country")
+
+women_labels <- female_man_map %>%
+  group_by(Country) %>%
+  summarize(lat = mean(lat),
+            long = mean(long))
+
+p4 <- female_man_map %>% filter(Time == 2019) %>%
+  ggplot(aes(x = long, y = lat)) +
+  geom_polygon(aes(fill = Share_of_female_managers, group=group), color = "white") 
+
+p4
+
 ```
 
