@@ -6,19 +6,24 @@ output: html_document
 ```{r}
 library(dplyr)
 library(ggplot2)
+library(RColorBrewer)
 ```
 
 
 ```{r}
-full_dataset <-read.csv("data1.csv")
+ALLCOUNTRY <-read.csv("data1.csv")
+ALLCOUNTRY <- ALLCOUNTRY %>% 
+  select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
 ```
 
 
 ```{r}
 OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
 
-full_dataset_OECD <- full_dataset %>%
+t1 <- ALLCOUNTRY %>%
   filter (Country %in% OECD_label)
+
+
 ```
 
 
@@ -27,35 +32,69 @@ full_dataset_OECD <- full_dataset %>%
 library(tidyr)
 
 # Isolate variables of interest
-unpaid_time <- full_dataset_OECD %>%
+unpaid_time <- t1 %>%
   filter(Indicator == "Time spent in unpaid work, by sex") %>%
-  select(Country, Sex, Age.Group, Time, Value) %>%
+  select(Country, Sex, Age.Group, Time, Value, Unit) %>%
   rename(unpaid_time = Value)
 
-total_time <- full_dataset_OECD %>%
+paid_time <- t1 %>%
+  filter(Indicator == "Time spent in paid work, by sex") %>%
+  select(Country, Sex, Age.Group, Time, Value, Unit) %>%
+  rename(paid_time = Value)
+
+total_time <- t1 %>%
   filter(Indicator == "Time spent in total work, by sex") %>%
-  select(Country, Sex, Age.Group, Time, Value) %>%
+  select(Country, Sex, Age.Group, Time, Value, Unit) %>%
   rename(total_time = Value)
 
-women_in_parliament <- full_dataset_OECD %>%
+women_in_parliament <- t1 %>%
   filter(Indicator == "Female share of seats in national parliaments") %>%
-  select(Country, Sex, Age.Group, Time, Value) %>%
+  select(Country, Sex, Age.Group, Time, Value, Unit) %>%
   rename(parliament_female_share_seats = Value)
 
-female_managers <- full_dataset_OECD %>%
+female_managers <- t1 %>%
   filter(Indicator == "Share of female managers") %>%
-  select(Country, Sex, Age.Group, Time, Value) %>%
+  select(Country, Sex, Age.Group, Time, Value, Unit) %>%
   rename(female_managers = Value)
 
-# Create new dataframe
-merged_1 <- merge(unpaid_time, total_time, by=c("Country", "Sex", "Age.Group", "Time"))
+share_of_seats_on_boards<- t1 %>%
+  filter(Indicator == "Female share of seats on boards of the largest publicly listed companies") %>%
+  select(Country, Sex, Age.Group, Time, Value, Unit) %>%
+  rename(share_of_seats_on_boards = Value)
 
-merged_2 <- merge(female_managers,women_in_parliament, by=c("Country", "Sex", "Age.Group", "Time"))
 
-# Create ratio variable
-# create a comparison map 
-new_unpaid_data <- merged_1 %>%
-  mutate(prop_unpaid = (unpaid_time/total_time))
+#Unpaid work time among men 
+unpaid_men <- unpaid_time%>%
+  filter (Sex %in% "Men")
+
+#Unpaid work time among men 
+unpaid_women <- unpaid_time%>%
+  filter (Sex %in% "Women")
+
+#merging the two datatsets 
+unpaid_total <- merge(unpaid_men,unpaid_women, by= "Country")
+unpaid_total<- unpaid_total%>%
+ mutate(unpaid_diff= unpaid_time.y-unpaid_time.x)
+
+#creating new variable converting minutes to hours 
+unpaid_total<- unpaid_total%>%
+  mutate (unpaid_diff_hours_per_day=unpaid_diff/24)
+
+#paid work time among men 
+paid_men <- paid_time%>%
+  filter (Sex %in% "Men")
+
+#paid work time among men 
+paid_women <- paid_time%>%
+  filter (Sex %in% "Women")
+
+paid_total <- merge(paid_men,paid_women, by= "Country")
+paid_total<- paid_total%>%
+ mutate(paid_diff= paid_time.x-paid_time.y)
+
+paid_total<- paid_total%>%
+  mutate (paid_diff_hours_per_day=paid_diff/24)
+
 ```
 
 ```{r}
@@ -77,66 +116,83 @@ recode_map <- country_key$Merged1; names(recode_map) = country_key$map
 world_map <- world_map %>%
   mutate(Country = recode(Country, !!!recode_map))
 
-Unpaid_map<- left_join(new_unpaid_data, world_map, by = "Country")
+Unpaid_map<- left_join(unpaid_total, world_map, by = "Country")
 
-new_unpaid_map <- Unpaid_map%>% filter (!Country %in% c("Australia", "Canada", "Japan", "Korea", "United States", "Mexico", "New Zealand"))
+Unpaid_map <- Unpaid_map%>% filter (!Country %in% c("Australia", "Canada", "Japan", "Korea", "United States", "Mexico", "New Zealand"))
 
-women_labels <- new_unpaid_map %>%
-  filter(Sex == "Women") %>%
+labels <- Unpaid_map %>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
             long = mean(long))
 
-men_labels <- new_unpaid_map %>%
-  filter(Sex == "Men") %>%
-  group_by(Country) %>%
-  summarize(lat = mean(lat),
-            long = mean(long))
-
-new_unpaid_map <- new_unpaid_map %>% 
-  mutate(manual_fill = cut(prop_unpaid, breaks = c(0, 0.2, 0.4, 0.6,0.8),
-                           labels = c("<=0.2", ">0.2", ">0.4", 
-                                      ">0.6"),
-                           right = TRUE))
-
-
-#Proportion of time spent in unpaid work 
-p1 <- new_unpaid_map %>% filter(Sex == "Women") %>%
+p1 <- Unpaid_map %>%
   ggplot(aes(x = long, y = lat)) +
-  geom_polygon(aes(fill = manual_fill, group=group), color = "white")  +
-  scale_fill_manual(values = c("plum2","lightcoral", "steelblue2")) +
+  geom_polygon(aes(fill = unpaid_diff_hours_per_day, group=group), color = "white")  +
+ scale_fill_gradient("Hours Per Day", low = "#EDE7F6",
+  high = "#512DA8" ) +
+  geom_text_repel(min.segment.length = Inf, data = labels, aes(long, lat, label = Country), color = "black") +
   coord_fixed(1) +
-  geom_text_repel(min.segment.length = Inf, data = women_labels, aes(long, lat, label = Country), color = "black") +
-      theme(legend.position = "none",
-        panel.grid.major = element_blank(), 
-        panel.background = element_blank(),
-        axis.title = element_blank(), 
-        axis.text = element_blank(),
-        axis.ticks = element_blank())
+ theme(panel.grid.major = element_blank(), 
+    panel.background = element_blank(),
+       axis.title = element_blank(), 
+      axis.text = element_blank(),
+     axis.ticks = element_blank())+
+  ggtitle("Excess Time Spent Per Day in Unpaid Work by Women Compared to Men")
 
-p2 <- new_unpaid_map %>% filter(Sex == "Men") %>%
-  ggplot(aes(x = long, y = lat)) +
-   geom_polygon(aes(fill = manual_fill, group = group), color = "white") +
-  scale_fill_manual(name = "Proportion of Unpaid Work", values = c("plum2","lightcoral", "steelblue2")) +
-  geom_text_repel(min.segment.length = Inf, data = men_labels, aes(long, lat, label = Country), color = "black") +
-  coord_fixed(1) +
-      theme(panel.grid.major = element_blank(), 
-        panel.background = element_blank(),
-        axis.title = element_blank(), 
-        axis.text = element_blank(),
-        axis.ticks = element_blank())+
-  ggtitle("Proportion of Time Spent in Unpaid Work by Women(Left) & Men(Right)")+
-   theme(plot.title = element_text(hjust = 0.62, size = 14))
+p1
 
-        
-ggarrange(p1, p2, nrow = 1)
+
 ```
 
+```{r}
+#Proportion of unpaid work in OECD countries in 2020 
+# Pulling out world map data frame
+world_map = map_data("world")%>%
+  rename(Country="region")
+
+#Recoding names
+
+country_key = data.frame(rbind(c("United Kingdom", "UK"), 
+                               c("United States", "USA")))
+names(country_key) = c("Merged1", "map")
+
+# Create named vector for recoding country names
+recode_map <- country_key$Merged1; names(recode_map) = country_key$map
+
+# Recode country names in world map data to match with Merged1 Dataset
+world_map <- world_map %>%
+  mutate(Country = recode(Country, !!!recode_map))
+
+paid_map<- left_join(paid_total, world_map, by = "Country")
+
+paid_map <- paid_map%>% filter (!Country %in% c("Australia", "Canada", "Japan", "Korea", "United States", "Mexico", "New Zealand"))
+
+labels <- paid_map %>%
+  group_by(Country) %>%
+  summarize(lat = mean(lat),
+            long = mean(long))
+
+p2 <- paid_map %>%
+  ggplot(aes(x = long, y = lat)) +
+  geom_polygon(aes(fill = paid_diff_hours_per_day, group=group), color = "white")  +
+ scale_fill_gradient("Hours Per Day", low = "#EDE7F6",
+  high = "#512DA8" ) +
+  geom_text_repel(min.segment.length = Inf, data = labels, aes(long, lat, label = Country), color = "black") +
+  coord_fixed(1) +
+ theme(panel.grid.major = element_blank(), 
+    panel.background = element_blank(),
+       axis.title = element_blank(), 
+      axis.text = element_blank(),
+     axis.ticks = element_blank())+
+  ggtitle("Excess Time Spent Per Day in Paid Work by Men Compared to Women")
+
+p2
+```
 
 
 ```{r}
 
-women_in_parliament_map <- full_dataset%>%
+women_in_parliament_map <- ALLCOUNTRY%>%
   filter(Indicator == "Female share of seats in national parliaments") %>%
   select(Country, Sex, Age.Group, Time, Value) %>%
   rename(parliament_female_share_seats = Value)
@@ -161,22 +217,49 @@ world_map <- world_map %>%
 
 parliament_map<- left_join(women_in_parliament_map, world_map, by = "Country")
 
-women_labels <- parliament_map %>%
+parliament_map <- parliament_map%>% filter (Country %in% c("Canada", "Costa Rica","United States", "Brazil","Mexico", "Colombia", "Chile" ))
+
+parliament_labels <- parliament_map %>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
             long = mean(long))
 
 p3 <- parliament_map %>% filter(Time == 2016) %>%
   ggplot(aes(x = long, y = lat)) +
-  geom_polygon(aes(fill = parliament_female_share_seats, group=group), color = "white") 
+  geom_polygon(aes(fill = parliament_female_share_seats, group=group), color = "white")+
+   scale_fill_gradient(limits=c(5,50),"Percentage of Seats", low = "yellow",
+  high = "red" ) +
+   coord_fixed(1.3) +
+  geom_text_repel(min.segment.length = Inf, data = parliament_labels, aes(long, lat, label = Country), color = "black") +
+ theme(panel.grid.major = element_blank(), 
+    panel.background = element_blank(),
+       axis.title = element_blank(), 
+      axis.text = element_blank(),
+     axis.ticks = element_blank())+
+  ggtitle("Women in Parliament in North and South America (2016)")
 
-p3
+
+p4 <- parliament_map %>% filter(Time == 1997) %>%
+  ggplot(aes(x = long, y = lat)) +
+  geom_polygon(aes(fill = parliament_female_share_seats, group=group), color = "white")+
+   scale_fill_gradient(limits=c(5,50),"Percentage of Seats", low = "yellow",
+  high = "red" ) +
+   coord_fixed(1.3) +
+  geom_text_repel(min.segment.length = Inf, data = parliament_labels, aes(long, lat, label = Country), color = "black") +
+ theme(panel.grid.major = element_blank(), 
+    panel.background = element_blank(),
+       axis.title = element_blank(), 
+      axis.text = element_blank(),
+     axis.ticks = element_blank())+
+  ggtitle("Women in Parliament in North and South America (1997)")
+
+ggarrange(p3, p4)
 
 
 ```
 
 ```{r}
-female_managers_map <- full_dataset%>%
+female_managers_map <- ALLCOUNTRY%>%
   filter(Indicator == "Share of female managers") %>%
   select(Country, Sex, Age.Group, Time, Value) %>%
   rename(Share_of_female_managers = Value)
@@ -199,18 +282,34 @@ recode_map <- country_key$Merged1; names(recode_map) = country_key$map
 world_map <- world_map %>%
   mutate(Country = recode(Country, !!!recode_map))
 
-female_man_map<- left_join(female_managers_map, world_map, by = "Country")
+managers_map<- left_join(female_managers_map, world_map, by = "Country")
 
-women_labels <- female_man_map %>%
+managers_map_2019 <- managers_map%>% filter (Time == 2019)
+
+managers_labels_2019 <- managers_map_2019 %>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
             long = mean(long))
 
-p4 <- female_man_map %>% filter(Time == 2019) %>%
+p5 <- managers_map_2019 %>% 
   ggplot(aes(x = long, y = lat)) +
-  geom_polygon(aes(fill = Share_of_female_managers, group=group), color = "white") 
+  geom_polygon(aes(fill = Share_of_female_managers, group=group), color = "white")+
+   scale_fill_gradient(limits=c(5,50),"Percentage", low = "#B3E5FC",
+  high = "#01579B" ) +
+   coord_fixed(1.3) +
+  geom_text_repel(min.segment.length = Inf, data = managers_labels_2019, aes(long, lat, label = Country), color = "black") +
+ theme(panel.grid.major = element_blank(), 
+    panel.background = element_blank(),
+       axis.title = element_blank(), 
+      axis.text = element_blank(),
+     axis.ticks = element_blank())+
+  ggtitle("Percentage of Female Managers Wordlwide (2019)")
 
-p4
+p5
+
+
+
+
 
 ```
 
