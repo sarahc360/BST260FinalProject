@@ -63,13 +63,13 @@ scdatALL <- scdata_list %>%
 scdatALL <- dummy_cols(scdatALL, select_columns = "Country")
 # Edit dummy variables so nome of the names have a space in them
 
-scdatALL <- scdatALL %>% 
-  rename(Country_UnitedStates = `Country_United States`) %>%
-  rename(Country_UnitedKingdom = `Country_United Kingdom`) %>%
-  rename(Country_SlovakRepublic = `Country_Slovak Republic`) %>%
-  rename(Country_NewZealand = `Country_New Zealand`) %>%
-  rename(Country_CzechRepublic = `Country_Czech Republic`) %>%
-  rename(Country_CostaRica = `Country_Costa Rica`)
+# scdatALL <- scdatALL %>% 
+#   rename(Country_UnitedStates = `Country_United States`) %>%
+#   rename(Country_UnitedKingdom = `Country_United Kingdom`) %>%
+#   rename(Country_SlovakRepublic = `Country_Slovak Republic`) %>%
+#   rename(Country_NewZealand = `Country_New Zealand`) %>%
+#   rename(Country_CzechRepublic = `Country_Czech Republic`) %>%
+#   rename(Country_CostaRica = `Country_Costa Rica`)
 # (Use only Country_Australia through Country_United Kingdom with Country_UnitedStates as the referent)
 
 # Convert Time to be a numeric variable
@@ -95,13 +95,13 @@ dim(sctest_set)
 
 
 # Regression
-scglm <- glm(data = sctrain_set, TPMPL ~ . -Country_UnitedStates)
+scglm <- glm(data = sctrain_set, TPMPL ~ . -`Country_United States`)
 summary(scglm)
-# p_hat_scglm <- predict(scglm, newdata = sctest_set, type = "response")
+p_hat_scglm <- predict(scglm, newdata = sctest_set, type = "response")
 
 
 # kNN
-scknn <- knn3(data = sctrain_set, TPMPL ~ . -Country_UnitedStates, k = 12)
+scknn <- knn3(data = sctrain_set, TPMPL ~ . -`Country_United States`, k = 12)
 summary(scknn)
 # f_hat_scknn <- predict(scknn, newdata = sctest_set)[,2]
 
