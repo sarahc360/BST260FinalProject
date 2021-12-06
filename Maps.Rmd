@@ -64,7 +64,7 @@ new_unpaid_data <- merged_1 %>%
 # Pulling out world map data frame
 world_map = map_data("world")%>%
   rename(Country="region")
-    
+
 #Recoding names
 
 country_key = data.frame(rbind(c("United Kingdom", "UK"), 
@@ -94,7 +94,6 @@ men_labels <- new_unpaid_map %>%
   summarize(lat = mean(lat),
             long = mean(long))
 
-cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 #Proportion of time spent in unpaid work 
 p1 <- new_unpaid_map %>% filter(Sex == "Women") %>%
