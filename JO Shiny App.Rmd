@@ -1,13 +1,15 @@
 ---
-title: "JO Test"
+title: "JO Shiny App"
 output: html_document
+runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-#test
-
+#read in data
 library(dplyr)
+library(tidyr)
+library(tidyverse)
 
 # set working directory to where you stored the .csv file
 #setwd("/Users/juliaolsen/Desktop/Fall 2021/BST 260/BST260FinalProject")
@@ -38,31 +40,21 @@ t1 <- t1 %>%
     select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
 ```
 
-To filter *only* OECD countries:
+**Data wrangling to create datasets of interest**
     ```{r}
-OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
+
+    OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
 
 t1 <- t1 %>%
     filter (Country %in% OECD_label) %>%
     mutate(Time=as.integer(Time), Value=as.numeric(Value))
 
-head(t1)
-str(t1)
-```
-```{r}
-#creating dataframe with only 'Labour force participation rate, by sex and age group' indicator
+#creating dataframes with indicators of interest for Shiny app analysis
+#creating dataframe t2 for line plot
 t2 <- t1 %>%
     filter(Indicator %in% c('Labour force participation rate, by sex and age group ', 'Share of employed who are managers, by sex', 'Female share of seats on boards of the largest publicly listed companies', 'Female share of seats in national parliaments'))
-head(t2)
-t2
 
-```
-
-Wrangling data for scatterplot:
-    
-    ```{r}
-library(tidyr)
-
+#creating dataframe t3 for scatterplots
 female_labour_force_participation <- t2 %>%
   filter(Indicator == 'Labour force participation rate, by sex and age group ' & Sex == "Women" & Age.Group=="Total") %>%
   select(Country, Value, Time) %>%
@@ -83,21 +75,17 @@ female_share_managers <- t2 %>%
   select(Country, Value, Time) %>%
   rename(female_share_managers = Value)
 
-# Create new dataframe
+# Create new dataframe for scatterplots
 data_list <- list(female_labour_force_participation, female_share_boards, female_share_parliament, female_share_managers)
 
 t3 <- data_list %>% 
   reduce(left_join, by=c("Country", "Time"))
-t3
-
 ```
 
-#Shiny App
-
+**Shiny App**
 ```{r}
 #load packages
 library(shiny)
-library(tidyverse)
 library(forcats)
 library(dslabs)
 
@@ -107,41 +95,105 @@ ui <- fluidPage(
   # Change theme to darkly
   theme = shinythemes::shinytheme("darkly"),
   # Application title
-  titlePanel("Labor Force Statistics and Leadership Positions by Gender"),
-  
+  titlePanel("Labor Force Participation by Sex & Female Leadership Positions Over Time"),
   tabsetPanel(
-    tabPanel("Line Plot",
-             # Dropdown menu that allows the user to choose a country for the line plot
+    tabPanel("Labor Force Participation by Sex",
+            p("The line plots generated here depict the labor force participation for males and females for OECD countries over time. The data used was created using a number of spreadsheets available from the", a("OECD.", href="https://stats.oecd.org/index.aspx?queryid=54757#")),
+                 
+                 # Add some space between the text above and dropdown
+                 br(),
+                 
+              # Dropdown menu that allows the user to choose a country for the line plot
              selectInput(inputId = "country", label = "Choose a country:",
-                        choices = c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech
-                                    Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary",
-                                    "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania",
-                                    "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal",
-                                    "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey",                                                   "United States"), selected = NULL, multiple = FALSE),
-             selectInput(inputId = "age", label = "Choose an Age Group:",
-                        choices = c("15-24","25-54","55-64","Total"), selected = NULL, multiple = FALSE),
+                        choices = c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica",
+                                    "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", 
+                                    "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia",
+                                    "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway",
+                                    "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden",
+                                    "Switzerland", "Turkey", "United States"), selected = NULL, multiple = FALSE),
+              # Dropdown menu that allows the user to choose an age group for the line plot
+              selectInput(inputId = "age", label = "Choose an Age Group:",
+                        choices = c("15-24", "25-54", "55-64", "Total"), selected = NULL, multiple = FALSE),
              # Show a plot of the generated plot
              mainPanel(
                plotOutput("LinePlot")
              )
     ),
-    tabPanel("Scatterplot",
-            # selectInput(inputId = "variable", label = "Choose a Variable:",
-             #           choices = c('Share of female managers', 'Female share of seats on boards of the largest publicly listed companies', 'Female share of seats in national parliaments'), selected = NULL, multiple = FALSE),
-             sliderInput(inputId = "year", "Year:",
-                         min = 1970, max = 2021,
-                         value = 2000, 
+    tabPanel("Female Parliament Seats",
+              p("The scatterplots generated here depict the relationship between female labor force participation and female share of seats in national parliament for OECD countries over time. The data used was created using a number of spreadsheets available from the", a("OECD.", href="https://stats.oecd.org/index.aspx?queryid=54757#")),
+                 
+                 # Add some space between the text above and dropdown
+                 br(),
+             # Dropdown menu that allows the user to choose the countries for the scatterplot
+             selectInput(inputId = "country1", label = "Choose countries of interest:",
+                        choices = c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica",
+                                    "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", 
+                                    "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia",
+                                    "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway",
+                                    "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden",
+                                    "Switzerland", "Turkey", "United States"), selected = NULL, multiple = TRUE), 
+            sliderInput(inputId = "year1", "Year:",
+                         min = 1997, max = 2016,
+                         value = 1997, 
                          step = 1, #slider increases by 1
                          sep = "",       # keep years in year format and not 1,960 format
                          ticks = FALSE,  # don't show tick marks on slider bar
                          animate = TRUE), # add play button to animate
              # Show a plot of the generated plot
              mainPanel(
-               plotOutput("Scatterplot")
+               plotOutput("Scatterplot1")
              )
-    )
-  )
-),
+    ),
+    tabPanel("Female Board Seats",
+           p("The scatterplots generated here depict the relationship between female labor force participation and female share of seats on boards of largest publicly listed companies for OECD countries over time. The data used was created using a number of spreadsheets available from the", a("OECD.", href="https://stats.oecd.org/index.aspx?queryid=54757#")),
+                 
+                 # Add some space between the text above and dropdown
+                 br(),
+             # Dropdown menu that allows the user to choose the countries for the scatterplot
+             selectInput(inputId = "country2", label = "Choose countries of interest:",
+                        choices = c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica",
+                                    "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", 
+                                    "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia",
+                                    "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway",
+                                    "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden",
+                                    "Switzerland", "Turkey", "United States"), selected = NULL, multiple = TRUE), 
+             sliderInput(inputId = "year2", "Year:",
+                         min = 2003, max = 2020,
+                         value = 2003, 
+                         step = 1, #slider increases by 1
+                         sep = "",       # keep years in year format and not 1,960 format
+                         ticks = FALSE,  # don't show tick marks on slider bar
+                         animate = TRUE), # add play button to animate
+             # Show a plot of the generated plot
+             mainPanel(
+               plotOutput("Scatterplot2")
+             )
+  ),
+  tabPanel("Female Managers",
+              p("The scatterplots generated here depict the relationship between female labor force participation and female share of employed who are managers for OECD countries over time. The data used was created using a number of spreadsheets available from the", a("OECD.", href="https://stats.oecd.org/index.aspx?queryid=54757#")),
+                 
+                 # Add some space between the text above and dropdown
+                 br(),
+           # Dropdown menu that allows the user to choose the countries for the scatterplot
+             selectInput(inputId = "country3", label = "Choose countries of interest:",
+                        choices = c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica",
+                                    "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", 
+                                    "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia",
+                                    "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway",
+                                    "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden",
+                                    "Switzerland", "Turkey", "United States"), selected = NULL, multiple = TRUE), 
+             sliderInput(inputId = "year3", "Year:",
+                         min = 2011, max = 2019,
+                         value = 2011, 
+                         step = 1, #slider increases by 1
+                         sep = "",       # keep years in year format and not 1,960 format
+                         ticks = FALSE,  # don't show tick marks on slider bar
+                         animate = TRUE), # add play button to animate
+             # Show a plot of the generated plot
+             mainPanel(
+               plotOutput("Scatterplot3")
+             )
+))),
 
 # Define server logic
 server <- function(input, output) {
@@ -150,28 +202,50 @@ server <- function(input, output) {
       filter(Country %in% input$country & Indicator %in% c('Labour force participation rate, by sex and age group ') & Age.Group %in% input$age & !is.na(Value)) %>%
       ggplot(aes(x=Time, y=Value, color=Sex)) + 
       geom_line() + 
-      scale_x_continuous(breaks = seq(1970, 2021, 5), limits = c(1970, 2021)) +
+      scale_x_continuous(breaks = seq(1990, 2021, 5), limits = c(1990, 2021)) +
       scale_y_continuous(breaks = seq(0, 100, 10), limits = c(0, 100)) +
       xlab("Year") +
       ylab("Labor Force Participation Rate(%)") +
-      ggtitle(paste("Labor Force Participation Rate by Sex from 1970 to 2021 in", input$country))
+      ggtitle(paste("Labor Force Participation Rate by Sex from 1990 to 2021 in", input$country)) + 
+      theme(plot.title = element_text(size = 15, face = "bold"))
   })
-  output$Scatterplot <- renderPlot({
+  output$Scatterplot1 <- renderPlot({
     t3 %>% 
-      filter(Time %in% input$year) %>%
-      ggplot(aes(female_labour_force_participation, female_share_boards, color=Country)) + 
+      filter(Time %in% input$year1 & Country %in% input$country1 & !is.na(female_labour_force_participation) & !is.na(female_share_parliament)) %>%
+      ggplot(aes_string(x="female_labour_force_participation", y="female_share_parliament", color="Country")) + 
       geom_point() + 
-      #scale_y_continuous(breaks = seq(0.5, 9.5, 0.5), limits = c(0.5, 9.5)) +
-      #scale_x_continuous(breaks = seq(15, 85, 5), limits = c(15, 85)) +
-      xlab("Female Labor Force Participation Rate(%)") +
-      ylab(female_share_boards) +
-      ggtitle(paste("female_share_boards against Female Labor Force Participation Rate in", input$year))
+      scale_y_continuous(breaks = seq(0, 100, 10), limits = c(0, 100)) +
+      scale_x_continuous(breaks = seq(0, 100, 10), limits = c(0, 100)) +
+      xlab("Female Labor Force Participation Rate (%)") +
+      ylab("Female Share of Seats in National Parliament (%)") +
+      ggtitle(paste("Female Labor Force Participation Rate vs. Female Share of Seats in Natl Parliament in", input$year1)) +
+      theme(plot.title = element_text(size = 15, face = "bold"))
+  })
+  output$Scatterplot2 <- renderPlot({
+    t3 %>% 
+      filter(Time %in% input$year2 & Country %in% input$country2 & !is.na(female_labour_force_participation) & !is.na(female_share_boards)) %>%
+      ggplot(aes_string(x="female_labour_force_participation", y="female_share_boards", color="Country")) + 
+      geom_point() + 
+      scale_y_continuous(breaks = seq(0, 100, 10), limits = c(0, 100)) +
+      scale_x_continuous(breaks = seq(0, 100, 10), limits = c(0, 100)) +
+      xlab("Female Labor Force Participation Rate (%)") +
+      ylab("Female Share of Seats on Boards of Largest Publicly Listed Companies (%)") +
+      ggtitle(paste("Female Labor Force Participation Rate vs. Female Share of Seats on Boards of Largest Publicly Listed Companies in", input$year2)) +
+      theme(plot.title = element_text(size = 15, face = "bold"))
+  })
+output$Scatterplot3 <- renderPlot({
+    t3 %>% 
+      filter(Time %in% input$year3 & Country %in% input$country3 & !is.na(female_labour_force_participation) & !is.na(female_share_managers)) %>%
+      ggplot(aes_string(x="female_labour_force_participation", y="female_share_managers", color="Country")) + 
+      geom_point() + 
+      scale_y_continuous(breaks = seq(0, 100, 10), limits = c(0, 100)) +
+      scale_x_continuous(breaks = seq(0, 100, 10), limits = c(0, 100)) +
+      xlab("Female Labor Force Participation Rate (%)") +
+      ylab("Female Share of Employed Who are Managers (%)") +
+      ggtitle(paste("Female Labor Force Participation Rate vs. Female Share of Employed Who are Managers in", input$year3)) +
+      theme(plot.title = element_text(size = 15, face = "bold"))
   })
 }
-  
-  
-  
-  
 )
 ```
 
