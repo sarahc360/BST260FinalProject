@@ -242,7 +242,7 @@ world_map <- world_map %>%
 parliament_map<- left_join(women_in_parliament_map, world_map, by = "Country")
 
 #Filtering North and South American Countries 
-parliament_map <- parliament_map%>% filter (Country %in% c("Canada", "Costa Rica","United States", "Brazil","Mexico", "Colombia", "Chile" ))
+parliament_map <- parliament_map%>% filter (Country %in% c("Canada","United States", "Brazil","Mexico", "Colombia", "Chile" ))
 
 #Creating labels for countries with 2016 data 
 parliament_labels_2016 <- parliament_map %>%filter(Time == 2016)%>%
@@ -260,8 +260,9 @@ parliament_labels_2006 <- parliament_map %>%filter(Time == 2006)%>%
 p3 <- parliament_map %>% filter(Time == 2016) %>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill = parliament_female_share_seats, group=group), color = "white")+
-   scale_fill_gradient(limits=c(5,50),"Percentage of Seats", low = "#E0F7FA",
+   scale_fill_gradient(limits=c(0,50),"Percentage of Seats", low = "#E0F7FA",
   high = "#1A237E" ) +
+  coord_fixed(1.3)+
   geom_text_repel(data = parliament_labels_2016, aes(long, lat, label = Country), color = "black") +
     ggtitle("Women in Parliament in North and South America (2016)")+
  theme(panel.grid.major = element_blank(), 
@@ -276,8 +277,9 @@ p3 <- parliament_map %>% filter(Time == 2016) %>%
 p4 <- parliament_map %>% filter(Time == 2006) %>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill = parliament_female_share_seats, group=group), color = "white")+
-   scale_fill_gradient(limits=c(5,50),"Percentage of Seats", low = "#E0F7FA",
+   scale_fill_gradient(limits=c(0,50),"Percentage of Seats", low = "#E0F7FA",
   high = "#1A237E" ) +
+  coord_fixed(1.3)+
   geom_text_repel( data = parliament_labels_2006, aes(long, lat, label = Country), color = "black") +
   ggtitle("Women in Parliament in North and South America (2006)")+
  theme(panel.grid.major = element_blank(), 
@@ -312,9 +314,11 @@ recode_map <- country_key$Merged1; names(recode_map) = country_key$map
 # Recode country names in world map data to match with Merged1 Dataset
 world_map <- world_map %>%
   mutate(Country = recode(Country, !!!recode_map))
+
 #Combining datasets 
 managers_map<- inner_join(female_managers_map, world_map, by = "Country", all=TRUE)
 #Creating labels by filtering for 2019 data 
+
 managers_labels<- managers_map %>% filter(Time==2019)%>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
@@ -338,6 +342,78 @@ p5 <- managers_map %>% filter(Time==2019)%>%
     plot.title = element_text(face="bold"))
 p5
 
+
+```
+
+
+```{r}
+#Share of female managers in Asia
+female_managers_map <- ALLCOUNTRY%>%
+ filter(Indicator == "Share of female managers") %>%
+dplyr::select(Country, Sex, Age.Group, Time, Value) %>%
+rename(Share_of_female_managers = Value)
+# Pulling out world map data frame
+world_map = map_data("world")%>%
+  rename(Country="region")
+#Recoding names
+country_key = data.frame(rbind(c("United Kingdom", "UK"), 
+                               c("United States", "USA")))
+names(country_key) = c("Merged1", "map")
+# Create named vector for recoding country names
+recode_map <- country_key$Merged1; names(recode_map) = country_key$map
+# Recode country names in world map data to match with Merged1 Dataset
+world_map <- world_map %>%
+  mutate(Country = recode(Country, !!!recode_map))
+
+managers_map_asia<-female_managers_map%>% filter (Country %in% c("Japan", "India","Indonesia", "Israel","Russia" ))
+
+#Combining datasets 
+managers_map_asia<- inner_join(managers_map_asia, world_map, by = "Country", all=TRUE)
+#Creating labels by filtering for 2019 data 
+managers_labels_2019<- managers_map_asia %>% filter(Time==2019)%>%
+  group_by(Country) %>%
+  summarize(lat = mean(lat),
+            long = mean(long))
+
+#Creating the plot 
+p6 <- managers_map_asia %>% filter(Time==2019)%>%
+  ggplot(aes(x = long, y = lat)) +
+  geom_polygon(aes(fill =Share_of_female_managers, group=group), color = "white")+
+   scale_fill_gradient("Percentage of Female Managers",limits=c(0,50),low="mistyrose", high="mistyrose4" ) +
+  geom_text_repel(min.segment.length = Inf, data = managers_labels_2019, aes(long, lat, label = Country), color = "black") +
+  coord_fixed(1.3)+
+   ggtitle("Female Managers in Asia (2019)")+
+ theme(panel.grid.major = element_blank(), 
+    panel.background = element_blank(),
+       axis.title = element_blank(), 
+      axis.text = element_blank(),
+     axis.ticks = element_blank(),
+    legend.title = element_text(size=10),
+    plot.title = element_text(face="bold"))
+
+p6
+
+#Creating labels by filtering for 2009 data 
+managers_labels_2010<- managers_map_asia %>% filter(Time==2010)%>%
+  group_by(Country) %>%
+  summarize(lat = mean(lat),
+            long = mean(long))
+
+#Creating the plot 
+p7 <- managers_map_asia %>% filter(Time==2010)%>%
+  ggplot(aes(x = long, y = lat)) +
+  geom_polygon(aes(fill =Share_of_female_managers, group=group), color = "white")+
+   scale_fill_gradient("Percentage of Female Managers",limits=c(0,50),  low="thistle", high="thistle4" ) +
+  geom_text_repel(min.segment.length = Inf, data = managers_labels_2010, aes(long, lat, label = Country), color = "black") +
+  coord_fixed(1.3)+
+   ggtitle("Female Managers in Asia (2009)")+
+ theme(panel.grid.major = element_blank(), 
+    panel.background = element_blank(),
+       axis.title = element_blank(), 
+      axis.text = element_blank(),
+     axis.ticks = element_blank(),
+    legend.title = element_text(size=10),
+    plot.title = element_text(face="bold"))
 
 ```
 
@@ -391,7 +467,7 @@ board_labels_2010<- board_map %>% filter(Time==2010)%>%
             long = mean(long))
 
 #Creating the plots
-p6 <- board_map %>% filter(Time==2020)%>%
+p7 <- board_map %>% filter(Time==2020)%>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill =Share_of_seats_in_boards, group=group), color = "white")+
    scale_fill_gradient2("Percentage of Seats" , limits=c(0,50), low = "#E0F2F1",
@@ -406,7 +482,7 @@ p6 <- board_map %>% filter(Time==2020)%>%
         plot.title = element_text(size = 10, hjust=0.5, face="bold"),
     legend.title = element_text(size=10))
 
-p7 <- board_map %>% filter(Time==2010)%>%
+p8 <- board_map %>% filter(Time==2010)%>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill =Share_of_seats_in_boards, group=group), color = "white")+
    scale_fill_gradient("Percentage of Seats" ,limits=c(0,50), low = "#E0F2F1",
@@ -422,6 +498,6 @@ p7 <- board_map %>% filter(Time==2010)%>%
     legend.title = element_text(size=10))
 
 #Putting the plots in one grid        
-grid.arrange(p7, p6)
+grid.arrange(p8, p7)
 ```
 
