@@ -340,7 +340,6 @@ p5 <- managers_map %>% filter(Time==2019)%>%
     legend.title = element_text(size=10),
     legend.position = "bottom",
     plot.title = element_text(face="bold"))
-p5
 
 
 ```
@@ -365,7 +364,8 @@ recode_map <- country_key$Merged1; names(recode_map) = country_key$map
 world_map <- world_map %>%
   mutate(Country = recode(Country, !!!recode_map))
 
-managers_map_asia<-female_managers_map%>% filter (Country %in% c("Japan", "India","Indonesia", "Israel","Russia" ))
+#Filtering for asian countries 
+managers_map_asia<-female_managers_map%>% filter (Country %in% c("Japan", "India","Indonesia", "Russia" ))
 
 #Combining datasets 
 managers_map_asia<- inner_join(managers_map_asia, world_map, by = "Country", all=TRUE)
@@ -393,7 +393,7 @@ p6 <- managers_map_asia %>% filter(Time==2019)%>%
 
 p6
 
-#Creating labels by filtering for 2009 data 
+#Creating labels by filtering for 20010 data 
 managers_labels_2010<- managers_map_asia %>% filter(Time==2010)%>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
@@ -403,10 +403,10 @@ managers_labels_2010<- managers_map_asia %>% filter(Time==2010)%>%
 p7 <- managers_map_asia %>% filter(Time==2010)%>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill =Share_of_female_managers, group=group), color = "white")+
-   scale_fill_gradient("Percentage of Female Managers",limits=c(0,50),  low="thistle", high="thistle4" ) +
+   scale_fill_gradient("Percentage of Female Managers",limits=c(0,50),  low="mistyrose", high="mistyrose4" ) +
   geom_text_repel(min.segment.length = Inf, data = managers_labels_2010, aes(long, lat, label = Country), color = "black") +
   coord_fixed(1.3)+
-   ggtitle("Female Managers in Asia (2009)")+
+   ggtitle("Female Managers in Asia (2010)")+
  theme(panel.grid.major = element_blank(), 
     panel.background = element_blank(),
        axis.title = element_blank(), 
@@ -415,6 +415,7 @@ p7 <- managers_map_asia %>% filter(Time==2010)%>%
     legend.title = element_text(size=10),
     plot.title = element_text(face="bold"))
 
+grid.arrange(p7,p6)
 ```
 
 
