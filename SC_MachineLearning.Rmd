@@ -2,9 +2,54 @@
 title: "SC_MachineLearning"
 output: html_document
 ---
+### DON'T COPY THIS CODE INTO FINAL .Rmd
 
-Model "total length of paid maternity and parental leave" by using knn, qda, and lda models. Find the best fitting model. 
+```{r}
+library(dplyr)
 
+# set working directory to where you stored the .csv file
+setwd("/Users/sarahchristensen/Documents/Harvard/Fall2021/BST260/BST260FinalProject") 
+
+ALLCOUNTRY <- read.csv("data1.csv")
+
+# Determine which duplicates will be the best to keep 
+unique(ALLCOUNTRY$COU)
+unique(ALLCOUNTRY$Country) #keep
+unique(ALLCOUNTRY$IND) #keep
+unique(ALLCOUNTRY$Indicator) #keep
+unique(ALLCOUNTRY$SEX) 
+unique(ALLCOUNTRY$Sex) #keep
+unique(ALLCOUNTRY$AGE)
+unique(ALLCOUNTRY$Age.Group) #keep
+unique(ALLCOUNTRY$TIME)
+unique(ALLCOUNTRY$Time) #keep
+unique(ALLCOUNTRY$Unit.Code)
+unique(ALLCOUNTRY$Unit) #keep
+unique(ALLCOUNTRY$PowerCode.Code)
+unique(ALLCOUNTRY$PowerCode)
+unique(ALLCOUNTRY$Reference.Period.Code)
+unique(ALLCOUNTRY$Reference.Period)
+unique(ALLCOUNTRY$Flag.Codes)
+unique(ALLCOUNTRY$Flags) #keep
+
+ALLCOUNTRY <- ALLCOUNTRY %>% 
+  dplyr::select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
+```
+
+To filter *only* OECD countries:
+```{r}
+OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
+
+t1 <- ALLCOUNTRY %>%
+  filter (Country %in% OECD_label)
+```
+
+### COPY STARTING HERE 
+
+
+In this section we will using machine learning to create models that can predict the total length of paid maternity and parental leave given year, country, and other measures related to women in the workforce and in policy making positions. We will use utilize several machine learning techniques to try and find the best fitting model. 
+
+First, we will need to call all the libraries we will be using and set up the data. 
 ```{r}
 library(fastDummies)
 library(dplyr)
@@ -14,78 +59,97 @@ library(caret)
 library(e1071)
 library(pROC)
 library(gtools)
+library(MASS)
+library(knitr)
 
-# Use to create variables of interest
+# Create scdat which we will use to create  all our variables of interest
 scdat <- t1 %>% filter(Age.Group == "Total")
 
-# Outcome of interest: TPMPL (Total length of paid maternity and parental leave)
-scdatTPMPL <- scdat %>% 
+# Outcome of interest: leave (Total length of paid maternity and parental leave)
+scdatleave <- scdat %>% 
   filter(Indicator == "Total length of paid maternity and parental leave") %>%
-  mutate(TPMPL = Value) %>%
-  dplyr::select(Country, Time, TPMPL)
+  mutate(leave = Value) %>%
+  dplyr::select(Country, Time, leave)
 
 # Predictors: (all are related to women in the workforce and women in policy making positions)
-# LFRm_w (Labour force participation ratio (men/women)) 
-scdatLFRm_w <- scdat %>% 
+# laborm_w (Labour force participation ratio (men/women)) 
+scdatlaborm_w <- scdat %>% 
   filter(Indicator == "Labour force participation rate, by sex and age group ") %>% 
   spread(Sex, Value) %>% 
-  mutate(LFRm_w = Men/Women) %>%
-  dplyr::select(Country, Time, LFRm_w)
+  mutate(laborm_w = Men/Women) %>%
+  dplyr::select(Country, Time, laborm_w)
 
-# FNP (female share of seats in national parliaments)
-scdatFNP <- scdat %>% 
+# parliament (female share of seats in national parliaments)
+scdatparliament <- scdat %>% 
   filter(Indicator == "Female share of seats in national parliaments") %>%
-  mutate(FNP = Value) %>%
-  dplyr::select(Country, Time, FNP)
+  mutate(parliament = Value) %>%
+  dplyr::select(Country, Time, parliament)
 
-# FM (share of female managers)
-scdatFM <- scdat %>%
+# manager (share of female managers)
+scdatmanager <- scdat %>%
   filter(Indicator == "Share of female managers") %>%
-  mutate(FM = Value) %>%
-  dplyr::select(Country, Time, FM)
+  mutate(manager = Value) %>%
+  dplyr::select(Country, Time, manager)
 
-# FBS (female share of seats on boards of the largest publicly listed companies)
-scdatFBS <- scdat %>% 
+# bseat (female share of seats on boards of the largest publicly listed companies)
+scdatbseat <- scdat %>% 
   filter(Indicator == "Female share of seats on boards of the largest publicly listed companies") %>% 
-  mutate(FBS = Value) %>%
-  dplyr::select(Country, Time, FBS)
-
-# Year 
-# (Time variable)
+  mutate(bseat = Value) %>%
+  dplyr::select(Country, Time, bseat)
 
 # Add all variables created above into a final dataframe
-scdata_list <- list(scdatTPMPL, scdatLFRm_w, scdatFNP, scdatFM, scdatFBS)
+scdata_list <- list(scdatleave, scdatlaborm_w, scdatparliament, scdatmanager, scdatbseat)
 scdatALL <- scdata_list %>% 
   reduce(left_join, by = c("Country", "Time")) %>% 
-  dplyr::select(Country, Time, TPMPL, LFRm_w, FNP, FM, FBS)
-
-# Finally, add dummy variables for Country to use in modeling
-scdatALL <- dummy_cols(scdatALL, select_columns = "Country")
-# Edit dummy variables so nome of the names have a space in them
-
-# scdatALL <- scdatALL %>% 
-#   rename(Country_UnitedStates = `Country_United States`) %>%
-#   rename(Country_UnitedKingdom = `Country_United Kingdom`) %>%
-#   rename(Country_SlovakRepublic = `Country_Slovak Republic`) %>%
-#   rename(Country_NewZealand = `Country_New Zealand`) %>%
-#   rename(Country_CzechRepublic = `Country_Czech Republic`) %>%
-#   rename(Country_CostaRica = `Country_Costa Rica`)
-# (Use only Country_Australia through Country_United Kingdom with Country_UnitedStates as the referent)
+  dplyr::select(Country, Time, leave, laborm_w, parliament, manager, bseat)
 
 # Convert Time to be a numeric variable
 scdatALL$Time <- as.numeric(scdatALL$Time)
 ```
 
-Now that we have our data cleaned, we can fit our machine learning models. 
+Now that the data are cleaned and put together, let's explore it a little bit. We will see that the outcome of interest can be either continuous (in weeks), or dichotomous (0-18 weeks, 19+ weeks). We will also see that we have a lot of missing data. Below, we explore ways in which was can deal with that missing data and will finalize our dataset that we will use for our modeling.
 
 ```{r}
 # Explore the outcome data (in weeks)
-summary(scdatALL$TPMPL)
+summary(scdatALL$leave)
+sum(is.na(scdatALL$leave))
 
+# We will choose a cutoff of 18 weeks as that is the median weeks of paid parental leave
+scdatALL <- scdatALL %>% mutate(leavecat = ifelse(leave >= 18, 1, 0))
+
+# Let's look at which variables have the most NA values. 
+# find # of NA's to determine which variables can be dropped
+sum(is.na(scdatALL$laborm_w))
+sum(is.na(scdatALL$parliament))
+sum(is.na(scdatALL$manager))
+sum(is.na(scdatALL$bseat))
+
+# Because both manager and bseat have the most NA values, and because they both measure similar things, lets see what happens to our dataset if we drop each of those variables and then omit all NAs, 
+# Find which subset of the data to use
+testNAremove <- na.omit(scdatALL)
+unique(testNAremove$Time)
+
+testNAremove1 <- subset(scdatALL, select = -c(manager))
+testNAremove1 <- testNAremove1 %>% na.omit()
+unique(testNAremove1$Time)
+
+testNAremove2 <- subset(scdatALL, select = -c(bseat))
+testNAremove2 <- testNAremove2 %>% na.omit()
+unique(testNAremove2$Time)
+
+# testNAremove1 leaves us with the most useable data (most observations) and spans the longest amount of time (2003 - 2016)
+
+# Remove NA values from dataset
+scdatALL <- subset(scdatALL, select = -c(manager))
+scdatALL <- scdatALL %>% na.omit()
+```
+
+Now that we have a cleaned dataset, we can get on with fitting our machine learning models.
+```{r}
 # Break data into training and test sets
 set.seed(1)
 
-scx <- stratified(scdatALL, "TPMPL", 0.6, keep.rownames = TRUE)
+scx <- stratified(scdatALL, "leave", 0.8, keep.rownames = TRUE)
 sctrain_set <- scx %>% dplyr::select(-rn)
 sctrain_index <- as.numeric(scx$rn)
 sctest_set <- scdatALL[-sctrain_index,]
@@ -93,32 +157,44 @@ sctest_set <- scdatALL[-sctrain_index,]
 dim(sctrain_set)
 dim(sctest_set)
 
-
 # Regression
-scglm <- glm(data = sctrain_set, TPMPL ~ . -`Country_United States`)
+scglm <- glm(data = sctrain_set, leavecat ~ . - leave - Country, family = "binomial")
 summary(scglm)
-p_hat_scglm <- predict(scglm, newdata = sctest_set, type = "response")
+scp_hat_logit <- predict(scglm, newdata = sctest_set, type = "response")
+scy_hat_logit <- ifelse(scp_hat_logit > 0.5, 1, 0)
+confusionMatrix(data = as.factor(scy_hat_logit), reference = as.factor(sctest_set$leavecat))
 
+# kNN k = 8
+scknn <- knn3(data = sctrain_set, leavecat ~ . - leave - Country, k = 8)
+f_hat_scknn <- predict(scknn, newdata = sctest_set)[,2]
+confusionMatrix(table(pred = round(f_hat_scknn), truth = sctest_set$leavecat))
 
-# kNN
-scknn <- knn3(data = sctrain_set, TPMPL ~ . -`Country_United States`, k = 12)
-summary(scknn)
-# f_hat_scknn <- predict(scknn, newdata = sctest_set)[,2]
-
-
-# QDA
-
-
-
-# LDA
-
-
-
+# Naive Bayes 
+scnb_fit <- naiveBayes(data = sctrain_set, leavecat ~ . - leave - Country)
+scp_hat_nb<- predict(scnb_fit, sctest_set, type = "raw")
+scy_hat_nb<- predict(scnb_fit, sctest_set)
+confusionMatrix(data = as.factor(scy_hat_nb), reference = as.factor(sctest_set$leavecat))
 ```
 
+The knn model fit above gives us the best overall accuracy when trying to predict a given observations likelihood of having more or less than 18 weeks of paid parental leave. Let's look at how changing the cutoff value would effect diagnostic sensitivity and specificity by creating ROC curves and looking at the area under the curve (AUC). 
 
+```{r}
+# plot ROC curves
+scroc_logit <- roc(sctest_set$leavecat, scp_hat_logit)
+scroc_knn <- roc(sctest_set$leavecat, f_hat_scknn)
+scroc_nb <- roc(sctest_set$leavecat, scp_hat_nb[,2])
 
+ggroc(list("Logistic Regression" = scroc_logit, "kNN, k = 8" = scroc_knn, "Naive Bayes" = scroc_nb)) +
+  theme(legend.title = element_blank()) +
+  geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), 
+               color = "black", linetype = "dashed") +
+  xlab("Sensitivity") +
+  ylab("Specificity")
 
+# calculate AUC values
+auc(scroc_logit)
+auc(scroc_knn)
+auc(scroc_nb)
+```
 
-
-
+Based on the plotted curves shown above, if we are trying to predict whether a country would have more or less than 18 weeks of total paid parental leave given the year, labor force ratio of men/women, female representation in parliament, and female share of board seats, we would want to select the k nearest neighbors model (k = 8) which gives us the best sensitivity and specificity at almost every cutoff point. 
