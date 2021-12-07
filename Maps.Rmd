@@ -318,7 +318,7 @@ world_map <- world_map %>%
   mutate(Country = recode(Country, !!!recode_map))
 
 #Combining datasets 
-managers_map<- left_join(female_managers_map, world_map, by = "Country")
+managers_map<- inner_join(female_managers_map, world_map, by = "Country", all=TRUE)
 
 #Creating labels by filtering for 2019 data 
 managers_labels<- managers_map %>% filter(Time==2019)%>%
