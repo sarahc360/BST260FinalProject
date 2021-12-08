@@ -70,7 +70,7 @@ share_of_seats_on_boards<- t1 %>%
 unpaid_men <- unpaid_time%>%
   filter (Sex %in% "Men")
 
-#Unpaid work time among men 
+#Unpaid work time among women 
 unpaid_women <- unpaid_time%>%
   filter (Sex %in% "Women")
 
@@ -87,7 +87,7 @@ unpaid_total<- unpaid_total%>%
 paid_men <- paid_time%>%
   filter (Sex %in% "Men")
 
-#paid work time among men 
+#paid work time among women 
 paid_women <- paid_time%>%
   filter (Sex %in% "Women")
 
@@ -100,10 +100,27 @@ paid_total<- paid_total%>%
 paid_total<- paid_total%>%
   mutate (paid_diff_hours_per_day=paid_diff/24)
 
+#total work time among men 
+total_time_men <- total_time%>%
+  filter (Sex %in% "Men")
+
+#total work time among women 
+total_time_women <- total_time%>%
+  filter (Sex %in% "Women")
+
+#merging the two datatsets 
+total_time_combined <- merge(total_time_men,total_time_women, by= "Country")
+total_time_combined<- total_time_combined%>%
+ mutate(total_diff= total_time.y-total_time.x)
+
+#creating new variable by converting minutes to hours per day 
+total_time_combined<- total_time_combined%>%
+  mutate (total_time_combined_hours=total_diff/24)
+
 ```
 
 ```{r}
-#Proportion of unpaid work in OECD countries in the latest year (not sure if this refers to 2020 or any year before so this is a limitation of the dataset)
+#Difference in time spent in unpaid work in OECD countries in the latest year (not sure if this refers to 2020 or any year before so this is a limitation of the dataset)
 
 # Pulling out world map data frame
 world_map = map_data("world")%>%
@@ -158,7 +175,7 @@ p1
 ```
 
 ```{r}
-#Proportion of paid work in OECD countries in the latest year (not sure if this refers to 2020 or any year before; this is a limitation of the dataset)
+#Difference in time spent in paid work paid work in OECD countries in the latest year (not sure if this refers to 2020 or any year before; this is a limitation of the dataset)
 
 # Pulling out world map data frame
 world_map = map_data("world")%>%
@@ -207,6 +224,14 @@ p2 <- paid_map %>%
   ggtitle("Excess Time Spent Per Day in Paid Work by Men Compared to Women (Latest Year)")
 
 p2
+```
+
+```{r}
+#Difference in time spent in total work in OECD countries in the latest year (not sure if this refers to 2020 or any year before so this is a limitation of the dataset)
+
+#Not sure how to do this because some values are neg 
+
+
 ```
 
 
@@ -393,7 +418,7 @@ p6 <- managers_map_asia %>% filter(Time==2019)%>%
 
 p6
 
-#Creating labels by filtering for 20010 data 
+#Creating labels by filtering for 2010 data 
 managers_labels_2010<- managers_map_asia %>% filter(Time==2010)%>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
