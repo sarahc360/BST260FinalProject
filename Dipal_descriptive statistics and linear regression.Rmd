@@ -174,7 +174,7 @@ total_paid <- new_data %>%
   scale_fill_brewer(palette="GnBu") +
   geom_bar(stat="identity", color="Black") +
   theme(legend.position = "none", axis.text=element_text(angle=45, hjust=1), plot.title=element_text(size=12)) + 
-  labs(x="Country", y="Total paid maternity and parental leave (weeks)", title="Total parental Leave (weeks)")
+  labs(x="Country", y="Total paid parental leave (weeks)", title="Total paid parental leave (weeks)")
 
 female_share_boards <- new_data %>%
   filter(Country %in% c("Canada", "United States", "United Kingdom", "Japan", "Australia", "France")) %>%
@@ -211,26 +211,26 @@ maternity <- new_data %>%
   filter(Sex=="Women") %>%
   ggplot(aes(x=prop_unpaid, y=maternity_leave)) +
   geom_point(color="Blue") +
-  labs(x="Proportion Unpaid Labor", y="Length of Maternity Leave (weeks)", title="Maternity leave vs. Proportion unpaid") +
+  labs(x="Proportion unpaid labor", y="Length of maternity Leave (weeks)", title="Maternity leave vs. Proportion unpaid") +
   theme(plot.title=element_text(size=10))
 
 share_involuntary <- new_data %>%
   ggplot(aes(x=prop_unpaid, y=share_involunttary_parttime)) +
   geom_point(color="Sky Blue") +
-  labs(x="Proportion Unpaid Labor", y="Share in involuntary part-time employment", title="Involuntary part-time employment vs. Proportion unpaid") +
+  labs(x="Proportion unpaid labor", y="Share in involuntary part-time employment", title="Involuntary part-time employment vs. Proportion unpaid") +
   theme(plot.title=element_text(size=10))
 
 share_managers <- new_data %>%
   ggplot(aes(x=prop_unpaid, y=share_managers)) +
   geom_point(color="royalblue1") +
-  labs(x="Proportion Unpaid Labor", y="Share employed who are managers ", title="Share managers vs. Proportion unpaid")+
+  labs(x="Proportion unpaid labor", y="Share employed who are managers ", title="Share managers vs. Proportion unpaid")+
   theme(plot.title=element_text(size=10))
 
 female_boards <- new_data %>%
   filter(Sex=="Women") %>%
   ggplot(aes(x=prop_unpaid, y=female_share_boards)) +
   geom_point(color="Slateblue1") +
-  labs(x="Proportion Unpaid Labor", y="Female share of boards in large companies", title="Female share of boards vs. Proportion unpaid ")+
+  labs(x="Proportion unpaid labor", y="Female share of boards in large companies", title="Female share of boards vs. Proportion unpaid ")+
   theme(plot.title=element_text(size=10))
 
 ggarrange(maternity, female_boards, share_involuntary, share_managers, nrow=2, ncol=2)

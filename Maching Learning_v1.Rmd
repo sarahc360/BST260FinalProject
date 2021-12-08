@@ -220,7 +220,7 @@ For males in countries where share of part time work is less than ~10.5%, **labo
 
 We predicted **median unpaid work percentages among females to be ~30 percentage points higher than among men (~50-60% for women vs. ~25-35% for men)**. For females in countries with < 55% labor participation, the median outcome is predicted to be ~59%. For females in countries with labor participation greater than 55%, **share of part time** is the next variable to estimate the outcome. In this subgroup, the model predicts a higher median unpaid work proportion when the share of part-time is greater than ~27% compared to when the share is lower. **Overall, these partitions predict that females will have spent a greater proportion of their time in unpaid work compared to males.**
 
-While the linear regression did not find any statistically significant predictors for proportion of time spent in unpaid work among females, the regression tree uses other covariates, including sex, to predict the unpaid work proportion from the observations available. The model is limited by small sample size and potential discrepancies in "latest year" reported by each country, but provides directional insight on variables that can predict the outcome of interest.
+While the linear regression did not find any statistically significant predictors for proportion of time spent in unpaid work among females, the regression tree made predictions with other covariates in the data, including sex, for the unpaid work proportion from the observations available. 
 
 
 We can use the regression tree to make predictions for the test set and calculate the mean square error. 
@@ -242,7 +242,7 @@ Using the model to make predictions on the test set, we found that the MSE of th
 
 ##### **Section III: Pruning**
 
-Having 6 nodes in the regression tree is helpful as a nuanced analysis of which variables and thresholds create meaningful partitions in the data for predictions. Next, we want to see if pruning the tree will improve our MSE.
+The regression tree helped identify variables and thresholds that create meaningful partitions for the predictions. Next, we want to see if pruning the tree will improve our MSE.
 
 ```{r}
 ## Look at reasonable tree depth for the given data set
@@ -267,7 +267,7 @@ mean((preds_tree1_prune - unpaid_test_set$prop_unpaid)^2)
 
 **Tree Pruning Analysis**
 
-It appears that **2 nodes yields the lowest minimum error**. When we pruned the tree to have 2 nodes, the tree is simplified, with female vs. male being the sole predictor of the outcome. While this **tree has a lower MSE at 77.5, it does not provide additional insights**, as we can tell from descriptive statistics that the proportion of time in unpaid work differs by sex. From `cv.tree` analysis, it seems that trees with 3, 4, or 5 nodes would only have an incremental improvement in MSE compared to the tree with 6 nodes (for example, model with four nodes has MSE of 86.0 vs. original MSE of 88.9). Therefore, we decided that **the regression tree with 6 nodes provides the most insightful predictions for the outcome of proportion of time spent in unpaid work.**
+It appears that **2 nodes yields the lowest minimum error**. When we pruned the tree to have 2 nodes, the tree is simplified, with female vs. male being the sole predictor of the outcome. While this **tree has a lower MSE at 77.5, it does not provide additional insights**, as we can tell from descriptive statistics that the proportion of time in unpaid work differs by sex. From `cv.tree` analysis, it seems that trees with 3, 4, or 5 nodes would only have an incremental improvement in MSE compared to the tree with 6 nodes (for example, model with four nodes has MSE of 86.0 vs. original MSE of 88.9). Therefore, we decided **the regression tree with 6 nodes has the best performance, as it provides the most nuanced predictions for the outcome of proportion of time spent in unpaid work.**
 
 
 ```{r}
@@ -278,3 +278,8 @@ fit_tree1_prune_again <- prune.tree(fit_tree1, best=4)
 preds_tree1_prune_again <- predict(fit_tree1_prune_again, newdata = unpaid_test_set)
 mean((preds_tree1_prune_again - unpaid_test_set$prop_unpaid)^2)
 ```
+
+
+**Conclusions**
+
+We conclude that sex is the primary predictor of proportion of time spent in unpaid work in the regression tree, with the model predicting a higher median proportion among females than males. Other key predictors of the outcome are the labor force participation and proportion of individuals with part-time work in the country. While the model is limited by small sample size and potential discrepancies in "latest year" reported by each country, it provides directional insights on employment-related variables that can predict time spent in unpaid work.
