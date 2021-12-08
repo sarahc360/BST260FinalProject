@@ -141,22 +141,30 @@ With the training set, we will fit a regression tree using the `tree` function t
 - Variables without missing data (i.e. no NAs)
 - Variables that may be associated with proportion of time in unpaid work
 
-Based on the criteria (see below for visualizations of predictor variables vs. outcome), we narrowed down the predictors to continent (`region`), male vs. female (`Sex`), percentage of individuals in the country who are in the labor force (`labour)`, and percentage of individuals who work part-time (`part_time`). We excluded paid_time, unpaid_time, and total_time variables because they are directly related to proportion of time spent in unpaid work and would not be informative in the regression tree. 
+To explore the data, we decided to plot covariates without missing data vs. the outcome to check if there appears to be an association between the predictor and outcome. We decided to make scatterplots of continuous covariates vs. proportion of time spent in unpaid work and boxplots of categorical covariates vs. proportion of time spent in unpaid work. 
 
-```{r, message=FALSE, warning=FALSE, fig.height=4}
+```{r, message=FALSE, warning=FALSE, fig.height=4, fig.width=12}
 ## Plots to show association between proportion of time in unpaid work vs. predictors in model
 
 ## Scatter plots of unpaid proportion vs. continuous predictors
 kf_model_data %>% 
-  gather(predictor, value, c(labour, part_time)) %>% 
+  gather(predictor, value, c(labour, part_time, employed_managers)) %>% 
   ggplot(aes(x = value, y = prop_unpaid)) + 
   geom_point(color="Blue") + 
   facet_wrap(~ predictor, scales = 'free',
              labeller = 
-               as_labeller(c("labour"="Labour Force Participation (%)", 
-                             "part_time" = "Share of Part-Time Work (%)"))) + 
+               as_labeller(c("labour"="Labor Force Participation (%)", 
+                             "part_time" = "Share of Part-Time Work (%)",
+                             "employed_managers" = "Managers Among Employed (%)"))) + 
   xlab(NULL) + ylab("Proportion of Time in Unpaid Work")
 
+```
+
+
+From the scatterplots, we saw that labor force participation is negatively correlated with proportion of time spent in unpaid work, and share of part-time work is positively correlated with proportion of time spent in unpaid work. Share of managers among employed does not seem to be correlated with the outcome. Therefore, we decided to exclude managers among employed from the predictors used in the regression Tree. 
+
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
 ## Box plots of unpaid proportion vs. categorical predictors
 p_fm <- kf_model_data %>%
   ggplot(aes(x = Sex, y = prop_unpaid)) + 
@@ -171,7 +179,7 @@ p_fm <- kf_model_data %>%
 p_region <- kf_model_data %>%
   ggplot(aes(x = Region, y = prop_unpaid)) + 
   geom_boxplot(aes(fill=Region)) +
-  scale_x_discrete(labels=c("Europe","North America","South America","Middle East","Oceania","Asia")) +
+  scale_x_discrete(labels=c("Europe","North America","Middle East","Oceania","Asia")) +
   labs(x="Region",y="Proportion of Time in Unpaid Work") +
   ggtitle("Region vs. Unpaid Work") +
   theme(plot.title = element_text(hjust = 0.5)) + 
@@ -182,7 +190,9 @@ grid.arrange(p_fm, p_region, ncol = 2)
 ```
 
 
-We then used the `tree` function to fit our regression tree for the outcome on the predictors of interest.
+From the boxplots, we see a clear difference in the distribution of proportion of time in unpaid work between males and females, with females reporting a higher proportion of time in unpaid work than males. For region vs. unpaid work, the distributions for the continents overlap, but Asia has a lower median than the rest. Therefore, we decided to keep Region as a categorical predictor in addition to sex. 
+
+We then used the `tree` function to fit our regression tree for the outcome on the predictors of interest (region, sex, labor force participation, share of part-time work).
 
 ```{r}
 ## Regression tree for proportion of unpaid work
@@ -210,7 +220,7 @@ For males in countries where share of part time work is less than ~10.5%, **labo
 
 We predicted **median unpaid work percentages among females to be ~30 percentage points higher than among men (~50-60% for women vs. ~25-35% for men)**. For females in countries with < 55% labor participation, the median outcome is predicted to be ~59%. For females in countries with labor participation greater than 55%, **share of part time** is the next variable to estimate the outcome. In this subgroup, the model predicts a higher median unpaid work proportion when the share of part-time is greater than ~27% compared to when the share is lower. **Overall, these partitions predict that females will have spent a greater proportion of their time in unpaid work compared to males.**
 
-While the linear regression did not find any statistically significant predictors for proportion of time spent in unpaid work among females, the regression tree is an analysis with other covariates that could predict the unpaid proportion from the database. The model is limited by small sample size and potential discrepancies in "latest year" reporting by each country, but provides directional insight on variables that can predict the outcome of interest.
+While the linear regression did not find any statistically significant predictors for proportion of time spent in unpaid work among females, the regression tree uses other covariates, including sex, to predict the unpaid work proportion from the observations available. The model is limited by small sample size and potential discrepancies in "latest year" reported by each country, but provides directional insight on variables that can predict the outcome of interest.
 
 
 We can use the regression tree to make predictions for the test set and calculate the mean square error. 
@@ -254,6 +264,8 @@ preds_tree1_prune <- predict(fit_tree1_prune, newdata = unpaid_test_set)
 mean((preds_tree1_prune - unpaid_test_set$prop_unpaid)^2)
 ```
 
+
+**Tree Pruning Analysis**
 
 It appears that **2 nodes yields the lowest minimum error**. When we pruned the tree to have 2 nodes, the tree is simplified, with female vs. male being the sole predictor of the outcome. While this **tree has a lower MSE at 77.5, it does not provide additional insights**, as we can tell from descriptive statistics that the proportion of time in unpaid work differs by sex. From `cv.tree` analysis, it seems that trees with 3, 4, or 5 nodes would only have an incremental improvement in MSE compared to the tree with 6 nodes (for example, model with four nodes has MSE of 86.0 vs. original MSE of 88.9). Therefore, we decided that **the regression tree with 6 nodes provides the most insightful predictions for the outcome of proportion of time spent in unpaid work.**
 
