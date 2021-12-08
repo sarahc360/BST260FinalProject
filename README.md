@@ -8,6 +8,24 @@ Template:
 - Link to website
 - Link to screencast
 
+### Overview and Motivation - Anu
+
+
+### Related Work - Anu 
+
+
+### Initial Questions - Kelly
+
+
+### Data - Sarah
+
+
+### Exploratory Analysis - Dipal
+
+
+### Final Analysis - Julia
+
+
 Indicators of employment from OECD 
 
 - Labour force participation rate, by sex and age group (percentages)
