@@ -92,11 +92,19 @@ paid_total<- paid_total%>%
 
 ```
 
+### Plot 1:Difference in time spent in unpaid work worldwide 
+
+```{r}
+
+```
+
+### Plot 2:Difference in time spent in paid work worldwide 
+
+```{r}
+
+```
+
 ### Plot 1: Difference in time spent in unpaid work in European countries (Latest Year)
-
-This plots looks specifically at countries in Europe.The year in which this data was recorded is not determined in the dataset as the recorded year is coded as 'Latest Year'. This is a limitation of the dataset. From the descriptive statistics section, we know that time spent in unpaid work is higher among women than men in all countries in our OECD dataset. For this plot, I created a variable 'unpaid_diff_hours_per_day' to capture that difference in time spent in unpaid work among men and women. 
-
-Plot 1 Interpretation: From the plot, we can see that time spent in unpaid work by women is especially high in Turkey and Portugal and a little less so but still significantly high in Austria, Ireland, Italy, Poland, Lithuana and Latvia. 
 
 ```{r}
 
@@ -152,11 +160,11 @@ p1
 
 ```
 
+This plots looks specifically at countries in Europe.The year in which this data was recorded is not determined in the dataset as the recorded year is coded as 'Latest Year'. This is a limitation of the dataset. From the descriptive statistics section, we know that time spent in unpaid work is higher among women than men in all countries in our OECD dataset. For this plot, I created a variable 'unpaid_diff_hours_per_day' to capture that difference in time spent in unpaid work among men and women. 
+
+Plot 1 Interpretation: From the plot, we can see that time spent in unpaid work by women is especially high in Turkey and Portugal and a little less so but still significantly high in Austria, Ireland, Italy, Poland, Lithuana and Latvia. 
+
 ### Plot 2: Difference in time spent in paid work in Euporean countries (Latest Year)
-
-This plots looks specifically at countries in Europe.The year in which this data was recorded is not determined in the dataset as the recorded year is coded as 'Latest Year'. This is a limitation of the dataset. From the descriptive statistics section, we again know that time spent in paid work is higher among men than women in all countries in our OECD dataset. For this plot, I created a variable 'paid_diff_hours_per_day' to capture that difference in time spent in paid work among men and women. 
-
-Plot 2 Interpretation: From the plot, we can see that time spent in paid work by men is significantly higher in Turkey followed by Portugal, Ireland, Austria, Lithuana and Poland. These results make sense because these were the same countries in which women were spending more time doing unpaid work. We can hence interpret that women might be spending significantly more time in unpaid work in countries where men are spending significantly more time in paid work.
 
 ```{r}
 
@@ -192,11 +200,11 @@ p2 <- paid_map %>%
 p2
 ```
 
-### Plots 3 & 4: Share of female seats in the parliament in North and South America (Comparison between years 2006 and 2016)
+This plots looks specifically at countries in Europe.The year in which this data was recorded is not determined in the dataset as the recorded year is coded as 'Latest Year'. This is a limitation of the dataset. From the descriptive statistics section, we again know that time spent in paid work is higher among men than women in all countries in our OECD dataset. For this plot, I created a variable 'paid_diff_hours_per_day' to capture that difference in time spent in paid work among men and women. 
 
-These plots look specifically at 6 countries in North and South America. The first plot looks at data for the year 2016 and the second plot looks at data for the year 2006. The reason for only looking at these countries is due to sparse data. Latest data available was for the year 2016. 
+Plot 2 Interpretation: From the plot, we can see that time spent in paid work by men is significantly higher in Turkey followed by Portugal, Ireland, Austria, Lithuana and Poland. These results make sense because these were the same countries in which women were spending more time doing unpaid work. We can hence interpret that women might be spending significantly more time in unpaid work in countries where men are spending significantly more time in paid work.
 
-Interpretation: Looking at the two maps, we can say that there was an overall increase in the percentage of seats occupied by women in parliament between years 2006 and 2016 in the countries shown on the map. The percentage change looks most significant in Mexico and least significant in Chile. 
+### Plots 3 & 4: Share of female seats in the parliament worldwide (Comparison between years 2006 and 2016)
 
 ```{r, warning=FALSE}
 
@@ -215,10 +223,6 @@ parliament_map_2016<- right_join(women_in_parliament_map_2016, world_map, by = "
 
 parliament_map_2006<- right_join(women_in_parliament_map_2006, world_map, by = "Country")
 
-
-
-#Filtering North and South American Countries 
-#parliament_map <- parliament_map%>% filter (Country %in% c("Canada","United States", "Brazil","Mexico", "Colombia", "Chile" ))
 
 #Creating labels for countries with 2016 data 
 parliament_labels_2016 <- parliament_map_2016 %>%
@@ -242,15 +246,13 @@ p3 <- parliament_map_2016 %>%
   high = "#1A237E", na.value='grey' ) +
   coord_fixed(1)+
   geom_text_repel(data = parliament_labels_2016, aes(long, lat, label = Country), color = "black") +
-    ggtitle("Women in Parliament in North and South America (2016)")+
+    ggtitle("Share of Female Seats in the Parliament Worldwide (2016)")+
  theme(panel.grid.major = element_blank(), 
     panel.background = element_blank(),
        axis.title = element_blank(), 
       axis.text = element_blank(),
      axis.ticks = element_blank(),
     plot.title = element_text(face="bold"))
-
-p3
 
 p4 <- parliament_map_2006 %>%
   ggplot(aes(x = long, y = lat)) +
@@ -259,24 +261,23 @@ p4 <- parliament_map_2006 %>%
   high = "#1A237E", na.value='grey'  ) +
   coord_fixed(1)+
   geom_text_repel( data = parliament_labels_2006, aes(long, lat, label = Country), color = "black") +
-  ggtitle("Women in Parliament in North and South America (2006)")+
+  ggtitle("Share of Female Seats in the Parliament Worldwide (2006)")+
  theme(panel.grid.major = element_blank(), 
     panel.background = element_blank(),
        axis.title = element_blank(), 
       axis.text = element_blank(),
      axis.ticks = element_blank(),
     plot.title = element_text(face="bold"))
-#Arranging the plots in the same grid 
 
+p3
 p4
 ```
 
+There's a lot of missing data for this variable. I chose these two years because 2016 was the latest year for this variable in the dataset and I chose 2006 because I wanted to look at a 10-year difference. 
+
+Plots 3 and 4 Interpretation: Looking at the two maps, we can say that there was an overall increase in the percentage of seats occupied by women in parliament between years 2006 and 2016 in North and South America. The percentage change looks most significant in Mexico. It also looks like some countries in Europe already had pretty high percentages in 2006. Data for Russia is interesting because although they have a high percentage of women in managerial positions, they have a pretty low percentage of women in parliament. 
+
 ### Plot 5: Share of females in managerial positions worldwide in 2019 
-
-Due to sparse data, a lot of countries are missing from the map. 
-
-Interpretation: From the plot, we can see that the percentage of managerial positions occupied by Women in 2019 is significantly higher in Russia, North and South America, and parts of Europe as compared to Asia. Turkey, Japan, India, Germany and Italy seem to have significantly lower percentage of women in managerial positions. This data supports the information from plots 1 and 2 where we saw that Turkey and Italy have the highest difference in both unpaid work and paid work among men and women. Through this we can interpret that the share of females in managerial positions might be lower in countries where women spend more time in unpaid work than men/ where men spend more time in paid work than women. 
-
 
 ```{r, warning=FALSE}
 
@@ -316,12 +317,11 @@ p5 <- managers_map %>%
 p5
 ```
 
+Due to sparse data, a lot of countries are missing from the map. 
+
+Plot 5 Interpretation: From the plot, we can see that the percentage of managerial positions occupied by Women in 2019 is significantly higher in Russia, North and South America, and parts of Europe as compared to Asia. Turkey, Japan, India, Germany and Italy seem to have significantly lower percentage of women in managerial positions. This data supports the information from plots 1 and 2 where we saw that Turkey and Italy have the highest difference in both unpaid work and paid work among men and women. Through this we can interpret that the share of females in managerial positions might be lower in countries where women spend more time in unpaid work than men/ where men spend more time in paid work than women. 
+
 ### Plots 6 & 7: Share of females in managerial positions in Asia (Comparison between years 2019 and 2010)
-
-These plots focus on countries in Asia. Due to sparse data, the plot only includes 4 countries. Russia is included in these plots as it falls partly in the Asian continent.I chose to look at 2019 and 2010 because data for 2020 was not available. 
-
-Interpretation: This plot zooms into countries in Asia (including Russia) and shows us data from years 2019 and 2010. We cannot see a significant change in percentage of managerial positions occupied by women between 2010 and 2019. 
-
 
 ```{r}
 #Share of female managers in Asia
@@ -381,9 +381,12 @@ p7 <- managers_map_asia %>% filter(Time==2010)%>%
 grid.arrange(p7,p6)
 ```
 
-### Plots 8 & 9: Female share of seats on boards of the largest publicly listed companies among countries in Europe (Comparison between years 2020 and 2010) 
+These plots focus on countries in Asia. Due to sparse data, the plot only includes 4 countries. Russia is included in these plots as it falls partly in the Asian continent.I chose to look at 2019 and 2010 because data for 2020 was not available. This plot does not show missing countries because when I tried scaling the map to only include Asian countries, it didn't end up looking like what I wanted it to look like so decided not to scale. 
 
-Interpretation: These plots look at female share of seats on boards of the largest publicly listed companies in Europe between years 2010 and 2020. Overall, it looks like the percentage of seats increased for most of the countries with the exception of Turkey, Greece, Lithuana and Estonia. This data again supports the information from previous plots where we saw that the difference in time spent in paid work between men and women were significantly higher in Turkey (also quite high in Lithuana). Through this we can interpret that the share of females in boards of the largest publicly listed companies among countries might be lower in countries where men spend more time in paid work than women/ where women spend more time in unpaid work than men. 
+Plots 6 and 7 Interpretation: This plot shows us data from years 2019 and 2010. We cannot see a significant change in percentage of managerial positions occupied by women between 2010 and 2019. 
+
+
+### Plots 8 & 9: Female share of seats on boards of the largest publicly listed companies among countries in Europe (Comparison between years 2020 and 2010) 
 
 ```{r}
 
@@ -445,3 +448,4 @@ p9 <- board_map %>% filter(Time==2010)%>%
 grid.arrange(p9, p8)
 ```
 
+Plots 8 and 9 Interpretation: These plots look at female share of seats on boards of the largest publicly listed companies in Europe between years 2010 and 2020. Overall, it looks like the percentage of seats increased for most of the countries with the exception of Turkey, Greece, Lithuana and Estonia. This data again supports the information from previous plots where we saw that the difference in time spent in paid work between men and women were significantly higher in Turkey (also quite high in Lithuana). Through this we can interpret that the share of females in boards of the largest publicly listed companies among countries might be lower in countries where men spend more time in paid work than women/ where women spend more time in unpaid work than men. 
