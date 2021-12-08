@@ -1,13 +1,17 @@
 ---
-title: "Machine Learning"
+title: "Regression Tree Analysis"
 output: html_document
 ---
 
-Overview: using regression trees to predict (1) unpaid work and (2) female share of manager positions from OECD Data
+Objective: Using data from the OECD (The Organisation for Economic Co-operation and Development) database, we plan to build a regression tree to predict proportion of time spent in unpaid work based on other demographic and employment metrics.
 
-##### Data pull from OECD data base
+First, we extracted the key variables of interest from the OECD database and focused on the OECD countries.
+
+
+#### **Section I: Data wrangling**
 
 ```{r, message=FALSE, warning=FALSE}
+## load libraries
 library(dplyr)
 library(tidyr)
 library(tidyverse)
@@ -15,38 +19,45 @@ library(tree)
 library(MASS)
 library(caret)
 library(stringr)
+library(ggplot2)
+library(gridExtra)
+```
 
+
+```{r}
+## Read in raw data from OECD
 ALLCOUNTRY <- read.csv("data1.csv")
 
+## Select columns needed from raw data
 ALLCOUNTRY <- ALLCOUNTRY %>% 
   dplyr::select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
 
-# Select specific variables and filter in only OECD countries
+## Select specific variables and filter in only OECD countries
 OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
 
+## Create clean data frame with filtered OECD countries
 t1 <- ALLCOUNTRY %>% 
   dplyr::select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags) %>%
   filter (Country %in% OECD_label)
 ```
 
-### Section II
-##### Building trees to predict unpid work
 
-##### Data wrangling to organize data frame with 2018 data and latest data
+Next, we organized the data in a format that could be used with regression models and filtered the data for a cross-sectional view of the variables. We created a data frame filtered for the parameters of time spent in work from "latest year", as it was the only data available for those variables in the OECD data (although the database did not specify the exact year). To align the sample for the present analysis with that for the linear regression analysis, we created another data frame filtered for the remaining variables from the year 2018. The two data frames were then joined together.
 
 ```{r}
-# Time variable was isolated only to 2018 for most variables as that is the most recent year with the most complete data, and combined with "latest year" time point as that was the only year with data in time in work
-
+## Isolate time to 2018 and age to total for non-time related variables
 model_years <- c("2018")
 model_age <- c("Total")
 
 t1_tidy <- t1 %>% filter(Age.Group %in% model_age,
                            Time %in% model_years) 
 
-## create columns for each indicator and input with value from cleaned data
+## Create columns for each indicator and input with value from cleaned data
 kf_tidy_data <- t1_tidy %>% dplyr::select(Country, Sex, Indicator, Value) %>% 
   spread(Indicator, Value)
 
+
+## Isolate spent in work variables and create a data frame from cleaned data
 time_indicators <- c("Time spent in unpaid work, by sex","Time spent in paid work, by sex","Time spent in total work, by sex")
 
 t1_tidy1 <- t1 %>% filter(Indicator %in% time_indicators)
@@ -54,11 +65,12 @@ t1_tidy1 <- t1 %>% filter(Indicator %in% time_indicators)
 kf_tidy_data1 <- t1_tidy1 %>% dplyr::select(Country, Sex, Indicator, Value) %>% 
   spread(Indicator, Value) 
 
+
+## Join the two data frames together to create new data frame with all variables of interest and rename variable names for simplicity
+## Filter out any countries that do not have reported values of time spent in unpaid work
 kf_joined_data <- left_join(kf_tidy_data, kf_tidy_data1, by=c("Country","Sex")) %>%
   rename(female_boards = "Female share of seats on boards of the largest publicly listed companies",
          labour = "Labour force participation rate, by sex and age group ",
-         maternity = "Length of maternity leave",
-         parental = "Length of parental leave with job protection",
          involuntary_PT = "Share of employed in involuntary part-time employment, by sex and age group",
          part_time = "Share of employed in part-time employment, by sex and age group",
          employed_managers = "Share of employed who are managers, by sex",
@@ -66,21 +78,26 @@ kf_joined_data <- left_join(kf_tidy_data, kf_tidy_data1, by=c("Country","Sex")) 
          industry = "Share of employed working in industry, by sex",
          services = "Share of employed working in services, by sex",
          female_managers = "Share of female managers",
-         paid_leave = "Total length of paid maternity and parental leave",
          unpaid_time = "Time spent in unpaid work, by sex",
          paid_time = "Time spent in paid work, by sex",
-         total_time = "Time spent in total work, by sex") %>%
+         total_time = "Time spent in total work, by sex",
+         maternity = "Length of maternity leave",
+         parental = "Length of parental leave with job protection",
+         paid_leave = "Total length of paid maternity and parental leave") %>%
   filter(!is.na(unpaid_time))
 ```
 
 
-##### Data wrangling to clean up data frame to be used for machine learning 
+From the organized data, we want to create a new variable that represents the percentage of time spent in unpaid work out of the total work time, as absolute values of time in work varies across countries and sex. This variable, proportion of time spent in unpaid work, will be the primary outcome used in our regression trees. 
+
+Since there are almost 40 countries in the OCED list, which is too many to use as a categorical predictor in the regression, we created a "region" variable based on continents represented in the data frame.
 
 ```{r}
+## Create new variable for proportion of time spent in unpaid labor
+kf_joined_data <- kf_joined_data %>% mutate(prop_unpaid = (unpaid_time/total_time)*100)
 
-# Create new variable for proportion of time spent in unpaid labor
-kf_joined_data <- kf_joined_data %>% mutate(prop_unpaid = unpaid_time/total_time)
 
+## List to assign countries to region (continent)
 europe <- c("Austria","Belgium","Czech Republic","Denmark","Estonia","Finland","France", "Germany","Greece","Hungary","Iceland","Ireland", "Italy","Latvia","Lithuania","Luxembourg","Netherlands","Norway","Poland","Portugal","Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland","United Kingdom") ## region 1
 north_america <- c("Canada","United States","Costa Rica", "Mexico") ## region 2
 south_america <- c("Chile","Colombia") ## region 3
@@ -88,7 +105,8 @@ middle_east <- c("Israel","Turkey") ## region 4
 oceania <- c("Australia","New Zealand") ## region 5
 asia <- c("Japan", "Korea") ## region 6
 
-## Create data frame for model data, create region variable, and assign countries a region value
+
+## Create data frame for model data with region variable, and assign countries a region value
 kf_model_data <- kf_joined_data %>% mutate(Region = ifelse(Country %in% europe, 1,
                                                   ifelse(Country %in% north_america, 2,
                                                   ifelse(Country %in% south_america,3,
@@ -96,22 +114,20 @@ kf_model_data <- kf_joined_data %>% mutate(Region = ifelse(Country %in% europe, 
                                                   ifelse(Country %in% oceania, 5,
                                                   ifelse(Country %in% asia, 6, NA)))))))
 
-## Code sex as a binary variable
+## Code sex with dummy values to use in the model, male=0, female=1
 kf_model_data <- kf_model_data %>% mutate(Sex = factor(Sex, levels=c("Men","Women"), labels=c("0","1")))
 
-## Code region as a factor
+## Classify region as a factor
 kf_model_data <- kf_model_data %>% mutate(Region = factor(Region))
 ```
 
 
-##### Regression tree train and test sets to predict PROPORTION of unpaid work among total work
+##### **Section II: Building Regression Tree**
 
-```{r,message=FALSE, warning=FALSE}
-library(tree)
-library(MASS)
-library(caret)
+In our model data, we have total 60 observations. Because the sample size is small, we used a 50-50 split from the model data to create the training and test sets. 
 
-## set up training and test sets
+```{r}
+## Set up training and test sets
 set.seed(1)
 unpaid_index_train = createDataPartition(y = kf_model_data$prop_unpaid,
                                   times = 1, p = 0.5, list = FALSE)
@@ -120,273 +136,133 @@ unpaid_test_set = slice(kf_model_data, -unpaid_index_train)
 ```
 
 
-##### Using TREE function to predict Proportion of Total Work Time that is Unpaid
+With the training set, we will fit a regression tree using the `tree` function to predict proportion of time spent in unpaid work based on other variables in the model data. To identify predictors, we selected variables with the following criteria: 
+
+- Variables without missing data (i.e. no NAs)
+- Variables that may be associated with proportion of time in unpaid work
+
+Based on the criteria (see below for visualizations of predictor variables vs. outcome), we narrowed down the predictors to continent (`region`), male vs. female (`Sex`), percentage of individuals in the country who are in the labor force (`labour)`, and percentage of individuals who work part-time (`part_time`). We excluded paid_time, unpaid_time, and total_time variables because they are directly related to proportion of time spent in unpaid work and would not be informative in the regression tree. 
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
+## Plots to show association between proportion of time in unpaid work vs. predictors in model
+
+## Scatter plots of unpaid proportion vs. continuous predictors
+kf_model_data %>% 
+  gather(predictor, value, c(labour, part_time)) %>% 
+  ggplot(aes(x = value, y = prop_unpaid)) + 
+  geom_point(color="Blue") + 
+  facet_wrap(~ predictor, scales = 'free',
+             labeller = 
+               as_labeller(c("labour"="Labour Force Participation (%)", 
+                             "part_time" = "Share of Part-Time Work (%)"))) + 
+  xlab(NULL) + ylab("Proportion of Time in Unpaid Work")
+
+## Box plots of unpaid proportion vs. categorical predictors
+p_fm <- kf_model_data %>%
+  ggplot(aes(x = Sex, y = prop_unpaid)) + 
+  geom_boxplot(aes(fill=Sex)) +
+  scale_x_discrete(labels=c("Male","Female")) +
+  labs(x="Sex",y="Proportion of Time in Unpaid Work") +
+  ggtitle("Sex vs. Unpaid Work") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(legend.position="none")
+
+## Note that South American countries had been filtered out from model data frame because of missing data
+p_region <- kf_model_data %>%
+  ggplot(aes(x = Region, y = prop_unpaid)) + 
+  geom_boxplot(aes(fill=Region)) +
+  scale_x_discrete(labels=c("Europe","North America","South America","Middle East","Oceania","Asia")) +
+  labs(x="Region",y="Proportion of Time in Unpaid Work") +
+  ggtitle("Region vs. Unpaid Work") +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  theme(legend.position="none")
+
+grid.arrange(p_fm, p_region, ncol = 2)
+```
+
+
+We then used the `tree` function to fit our regression tree for the outcome on the predictors of interest.
 
 ```{r}
-## make regression tree using tree predicting proportion of unpaid time using variables with the fewest NAs
+## Regression tree for proportion of unpaid work
 
-##use predictors that do not have NAs
+## Fit regression tree with predictor variables
 set.seed(1)
 
-fit_tree1 <- tree(prop_unpaid ~ Region + Sex + labour + employed_managers + part_time, data = unpaid_train_set)
-fit_tree1
+fit_tree1 <- unpaid_train_set %>% tree(prop_unpaid ~ Region + Sex + labour + part_time, data =., model=T)
+
+## Summarize regression tree
 summary(fit_tree1)
 
+## Plot regression Tree
 plot(fit_tree1, type="uniform")
 text(fit_tree1, pretty = 0, cex = 1)
+title("Regression Tree Predicting Proportion of Time in Unpaid Work")
+```
 
-## calculate proportion of unpaid time predictions in test set
+
+**Regression Tree Analysis**
+
+For this regression tree, **sex, labor force participation, and share of part-time work** were used as the variables to predict proportion of time spent in unpaid work. This suggests that region/continent may not be a good predictor of proportion of time spent in unpaid work. The tree has 6 nodes constructed with the three variables. The first split is by Sex (male = 0, female = 1), and **the tree predicts that females correspond to a higher percentage of unpaid work out of their total work compared to males**. For males, the next variable used to predict the outcome is **share of part time employment**. The median prediction of the outcome is **slightly higher for males in countries with higher share of part-time work** at ~35% compared to lower share of part-time work.
+
+For males in countries where share of part time work is less than ~10.5%, **labor force participation** is the next predictor of the outcome. The prediction is higher if country has labor force participation < 66% compared to if above the threshold. A potential reason for this split is that males in countries with higher labor force participation may have less time to spend in unpaid work . 
+
+We predicted **median unpaid work percentages among females to be ~30 percentage points higher than among men (~50-60% for women vs. ~25-35% for men)**. For females in countries with < 55% labor participation, the median outcome is predicted to be ~59%. For females in countries with labor participation greater than 55%, **share of part time** is the next variable to estimate the outcome. In this subgroup, the model predicts a higher median unpaid work proportion when the share of part-time is greater than ~27% compared to when the share is lower. **Overall, these partitions predict that females will have spent a greater proportion of their time in unpaid work compared to males.**
+
+While the linear regression did not find any statistically significant predictors for proportion of time spent in unpaid work among females, the regression tree is an analysis with other covariates that could predict the unpaid proportion from the database. The model is limited by small sample size and potential discrepancies in "latest year" reporting by each country, but provides directional insight on variables that can predict the outcome of interest.
+
+
+We can use the regression tree to make predictions for the test set and calculate the mean square error. 
+
+```{r}
+## Make predictions for proportion of unpaid time in test set data
 preds_tree1 <- predict(fit_tree1, newdata = unpaid_test_set)
-summary(preds_tree1)
-mean((preds_tree1 - unpaid_test_set$prop_unpaid)^2)
 
-## look at reasonable tree depth for given dataset
+## Calculate MSE from regression tree
+mean((preds_tree1 - unpaid_test_set$prop_unpaid)^2)
+```
+
+
+**Analysis**
+
+Using the model to make predictions on the test set, we found that the MSE of the model is 88.9.
+
+
+
+##### **Section III: Pruning**
+
+Having 6 nodes in the regression tree is helpful as a nuanced analysis of which variables and thresholds create meaningful partitions in the data for predictions. Next, we want to see if pruning the tree will improve our MSE.
+
+```{r}
+## Look at reasonable tree depth for the given data set
 set.seed(1)
 cv_data <- cv.tree(fit_tree1)
-plot(cv_data$size, cv_data$dev, type = "b")
+plot(cv_data$size, cv_data$dev, type = "b", xlab="Node Size", ylab="Deviance", main="Tree Depth Analysis")
 
-```
+## Prune tree with the number of nodes yielding lowest variance
+fit_tree1_prune <- prune.tree(fit_tree1, best=2)
+summary(fit_tree1_prune)
 
-##### Using RPART function to predict Proportion of Total Work Time that is Unpaid
+## Plot pruned tree with 2 nodes
+plot(fit_tree1_prune, type="uniform")
+text(fit_tree1_prune, pretty = 0, cex = 1)
+title("Pruned Regression Tree Predicting Proportion of Time in Unpaid Work")
 
-```{r, message=FALSE, warning=FALSE}
-## make regression tree using rpart
-library(rpart)
-library(rpart.plot)
-
-set.seed(1)
-
-fit_rpart1 <- rpart(prop_unpaid ~ Region + Sex + labour + employed_managers + part_time, data = unpaid_train_set)
-summary(fit_rpart1)
-
-rpart.plot(fit_rpart1, digits=4)
-
-plotcp(fit_rpart1)
-min_cp = fit_rpart1$cptable[which.min(fit_rpart1$cptable[,"xerror"]),"CP"]
-min_cp
-
-p <- prune(fit_rpart1, cp = 0.08)
-rpart.plot(p, digits = 4)
+## Make predictions for test set and calculate MSE
+preds_tree1_prune <- predict(fit_tree1_prune, newdata = unpaid_test_set)
+mean((preds_tree1_prune - unpaid_test_set$prop_unpaid)^2)
 ```
 
 
-##### Regression tree train and test sets to predict total MINUTES of unpaid work
+It appears that **2 nodes yields the lowest minimum error**. When we pruned the tree to have 2 nodes, the tree is simplified, with female vs. male being the sole predictor of the outcome. While this **tree has a lower MSE at 77.5, it does not provide additional insights**, as we can tell from descriptive statistics that the proportion of time in unpaid work differs by sex. From `cv.tree` analysis, it seems that trees with 3, 4, or 5 nodes would only have an incremental improvement in MSE compared to the tree with 6 nodes (for example, model with four nodes has MSE of 86.0 vs. original MSE of 88.9). Therefore, we decided that **the regression tree with 6 nodes provides the most insightful predictions for the outcome of proportion of time spent in unpaid work.**
 
-```{r,message=FALSE, warning=FALSE}
-## set up training and test sets
-set.seed(1)
-minutes_index_train = createDataPartition(y = kf_model_data$unpaid_time,
-                                  times = 1, p = 0.5, list = FALSE)
-minutes_train_set = slice(kf_model_data, minutes_index_train)
-minutes_test_set = slice(kf_model_data, -minutes_index_train)
-```
-
-
-#### Using TREE to predict unpaid time in MINUTES
 
 ```{r}
-## make regression tree using tree predicting minutes unpaid time
+## Prune tree with 4 nodes
+fit_tree1_prune_again <- prune.tree(fit_tree1, best=4)
 
-set.seed(1)
-
-minutes_fit_tree <- minutes_train_set %>% tree(unpaid_time ~ Region + Sex + labour + employed_managers + part_time, data =., model=T)
-minutes_fit_tree
-summary(minutes_fit_tree)
-
-plot(minutes_fit_tree, type="uniform")
-text(minutes_fit_tree, pretty = 0, cex = 1)
-
-## calculate unpaid time predictions in test set
-preds_minutes_tree <- predict(minutes_fit_tree, newdata = minutes_test_set)
-summary(preds_minutes_tree)
-mean((preds_minutes_tree - minutes_test_set$unpaid_time)^2)
-
-## find ideal number of nodes
-minutes_data <- cv.tree(minutes_fit_tree)
-plot(minutes_data$size, minutes_data$dev, type = "b")
-
-## prune to 2 nodes
-prune_minutes = prune.tree(minutes_fit_tree, best = 2)
-
-## find test set estimates with pruned tree
-preds_prune <- predict(prune_minutes, newdata = minutes_test_set)
-summary(preds_prune)
-mean((preds_prune - minutes_test_set$unpaid_time)^2)
+## Make predictions for test set and calculate MSE
+preds_tree1_prune_again <- predict(fit_tree1_prune_again, newdata = unpaid_test_set)
+mean((preds_tree1_prune_again - unpaid_test_set$prop_unpaid)^2)
 ```
-
-
-##### Using TREE to predict total MINUTES of unpaid work, without sex as predictor
-
-```{r}
-## make regression tree using tree predicting minutes unpaid time
-
-set.seed(1)
-
-all_fit_tree <- tree(unpaid_time ~ Region + labour + employed_managers + part_time, data = minutes_train_set)
-all_fit_tree
-summary(all_fit_tree)
-
-plot(all_fit_tree, type="uniform")
-text(all_fit_tree, pretty = 0, cex = 1)
-
-## calculate unpaid time predictions in test set
-preds_all <- predict(all_fit_tree, newdata = minutes_test_set)
-summary(preds_all)
-mean((preds_all - minutes_test_set$unpaid_time)^2)
-
-## find ideal number of nodes
-minutes_all <- cv.tree(all_fit_tree)
-plot(minutes_all$size, minutes_all$dev, type = "b")
-```
-
-
-##### Using rpart to predict total MINUTES of unpaid work, without sex as predictor
-
-```{r}
-##using rpart
-minutes_fit_rpart <- rpart(unpaid_time ~ Region + labour + employed_managers + part_time, data = minutes_train_set)
-summary(minutes_fit_rpart)
-
-## rpart plot
-rpart.plot(minutes_fit_rpart, digits=4)
-
-## find cp for rplot
-plotcp(minutes_fit_rpart)
-min_cp = minutes_fit_rpart$cptable[which.min(minutes_fit_rpart$cptable[,"xerror"]),"CP"]
-min_cp
-
-## prune rpart tree
-p1 <- prune(minutes_fit_rpart, cp = 0.14)
-rpart.plot(p1, digits = 4)
-
-## calculate unpaid time predictions in test set
-preds_minutes_rpart <- predict(minutes_fit_rpart, newdata = minutes_test_set)
-summary(preds_minutes_rpart)
-mean((preds_minutes_rpart - minutes_test_set$unpaid_time)^2)
-
-## calculate unpaid time predictions with pruned tree
-preds_prune_rpart <- predict(p1, newdata = minutes_test_set)
-summary(preds_prune_rpart)
-mean((preds_prune_rpart - minutes_test_set$unpaid_time)^2)
-```
-
-
-### Section II:
-###### Building regression trees for female share of managers
-
-##### Data wrangling to organize data frame with years where % of managers who are females are available and create data set for modeling
-
-```{r}
-#create list for the years where female share of managers is available
-managers_years <- c("2011","2012","2013","2014","2015","2016","2017","2018")
-
-## Coding for regions
-europe <- c("Austria","Belgium","Czech Republic","Denmark","Estonia","Finland","France", "Germany","Greece","Hungary","Iceland","Ireland", "Italy","Latvia","Lithuania","Luxembourg","Netherlands","Norway","Poland","Portugal","Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland","United Kingdom") ## region 1
-north_america <- c("Canada","United States","Costa Rica", "Mexico") ## region 2
-south_america <- c("Chile","Colombia") ## region 3
-middle_east <- c("Israel","Turkey") ## region 4
-oceania <- c("Australia","New Zealand") ## region 5
-asia <- c("Japan", "Korea") ## region 6
-
-t1_female <- t1 %>% filter(Sex=="Women",
-                           Age.Group=="Total",
-                           Time %in% managers_years) 
-
-##Ceate region variable, and assign countries a region value
-t1_female <- t1_female %>% mutate(Region = ifelse(Country %in% europe, 1,
-                                                  ifelse(Country %in% north_america, 2,
-                                                  ifelse(Country %in% south_america,3,
-                                                  ifelse(Country %in% middle_east, 4,
-                                                  ifelse(Country %in% oceania, 5,
-                                                  ifelse(Country %in% asia, 6, NA)))))))
-
-## create columns for each indicator and input with value from cleaned data
-kf_manager_data <- t1_female %>% dplyr::select(Country, Time, Sex, Indicator, Value, Region) %>% 
-  spread(Indicator, Value) 
-
-## Note: female_managers = female share of employment in managerial positions (%)
-## Note: employed_managers = share of employed who are managers (%)
-kf_manager_data <-kf_manager_data %>% rename(female_parliaments = "Female share of seats in national parliaments",
-                                        female_boards = "Female share of seats on boards of the largest publicly listed companies",
-                                        labour = "Labour force participation rate, by sex and age group ",
-                                        maternity = "Length of maternity leave",
-                                        parental = "Length of parental leave with job protection",
-                                        involuntary_PT = "Share of employed in involuntary part-time employment, by sex and age group",
-                                        part_time = "Share of employed in part-time employment, by sex and age group",
-                                        employed_managers = "Share of employed who are managers, by sex",
-                                        agriculture = "Share of employed working in agriculture, by sex",
-                                        industry = "Share of employed working in industry, by sex",
-                                        services = "Share of employed working in services, by sex",
-                                        female_managers = "Share of female managers",
-                                        paid_leave = "Total length of paid maternity and parental leave")
-
-## remove all NAs from set, make time numeric
-kf_manager_data <- kf_manager_data %>% na.omit() %>% 
-  mutate(Time = as.numeric(Time))
-```
-
-
-###### Using TREE to predict female share in managers
-
-```{r}
-## set up training and test sets
-set.seed(1)
-managers_train = createDataPartition(y = kf_manager_data$female_managers,
-                                  times = 1, p = 0.5, list = FALSE)
-managers_train_set = slice(kf_manager_data, managers_train)
-managers_test_set = slice(kf_manager_data, -managers_train)
-
-## tree function
-set.seed(1)
-
-managers_tree <<- managers_train_set %>% 
-  dplyr::select(!c(Country, Sex, parental, maternity)) %>%
-  tree(female_managers ~ ., data =., model=T)
-summary(managers_tree)
-
-plot(managers_tree, type="uniform")
-text(managers_tree, pretty = 0, cex = 1)
-
-## calculate unpaid time predictions in test set
-preds_managers <- predict(managers_tree, newdata = managers_test_set)
-summary(preds_managers)
-mean((preds_managers - managers_test_set$female_managers)^2)
-
-## find ideal number of nodes
-cv_managers <- cv.tree(managers_tree)
-plot(cv_managers$size, cv_managers$dev, type = "b")
-```
-
-
-###### Using RPART to predict female share in managers
-
-```{r}
-##using rpart
-managers_rpart <- managers_train_set %>% 
-  dplyr::select(!c(Country, Sex, parental, maternity)) %>%
-  rpart(female_managers ~ ., data =., model=T)
-summary(managers_rpart)
-
-## rpart plot
-rpart.plot(managers_rpart, digits=4)
-
-## find cp for rplot
-plotcp(managers_rpart)
-min_cp = managers_rpart$cptable[which.min(managers_rpart$cptable[,"xerror"]),"CP"]
-min_cp
-
-## prune rpart tree
-managers_prune <- prune(managers_rpart, cp = 0.08)
-rpart.plot(p1, digits = 4)
-
-## calculate unpaid time predictions with test set (original tree)
-preds_managers_rpart <- predict(managers_rpart, newdata = managers_test_set)
-summary(preds_managers_rpart)
-mean((preds_managers_rpart - managers_test_set$female_managers)^2)
-
-## calculate unpaid time predictions with pruned tree
-preds_managers_prune <- predict(managers_prune, newdata = managers_test_set)
-summary(preds_managers_prune)
-mean((preds_managers_prune - managers_test_set$female_managers)^2)
-```
-
