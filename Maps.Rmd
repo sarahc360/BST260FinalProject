@@ -1,20 +1,29 @@
 ---
-title: "Maps"
+title: "Maps- Anushruta Neupane"
 output: html_document
 ---
+### Variables Used 
+- unpaid_diff_hours_per_day: Difference in hours spent in unpaid work between Men and Women in OECD countries 
 
-```{r}
+- paid_diff_hours_per_day: Difference in hours spent in paid work between Men and Women in OECD countries 
+
+- parliament_female_share_seats_all: Female share of seats in national parliaments in all countries in the full dataset 
+
+- Share_of_female_managers_all: Share of females in managerial positions in all countries in the full dataset 
+
+- Share_of_seats_in_boards_all: Female share of seats on boards of the largest publicly listed companies in all countries in the full dataset 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(dplyr)
 library(ggplot2)
-library(RColorBrewer)
 library(ggrepel)
 library(egg)
 library(tidyr)
-library(sf)
 ```
 
 
 ```{r}
+#Reading in the full dataset 
 ALLCOUNTRY <-read.csv("data1.csv")
 ALLCOUNTRY <- ALLCOUNTRY %>% 
   dplyr::select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
@@ -22,6 +31,7 @@ ALLCOUNTRY <- ALLCOUNTRY %>%
 
 
 ```{r}
+#Creating OECD countries specific dataframe 
 OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
 
 t1 <- ALLCOUNTRY %>%
@@ -30,11 +40,10 @@ t1 <- ALLCOUNTRY %>%
 
 ```
 
-
+### Dataframes for variables of interest 
 
 ```{r}
 
-# Isolate variables of interest
 unpaid_time <- t1 %>%
   filter(Indicator == "Time spent in unpaid work, by sex") %>%
   dplyr::select(Country, Sex, Age.Group, Time, Value, Unit) %>%
@@ -50,77 +59,45 @@ total_time <- t1 %>%
   dplyr::select(Country, Sex, Age.Group, Time, Value, Unit) %>%
   rename(total_time = Value)
 
-women_in_parliament <- t1 %>%
-  filter(Indicator == "Female share of seats in national parliaments") %>%
-  dplyr::select(Country, Sex, Age.Group, Time, Value, Unit) %>%
-  rename(parliament_female_share_seats = Value)
 
-female_managers <- t1 %>%
-  filter(Indicator == "Share of female managers") %>%
-  dplyr::select(Country, Sex, Age.Group, Time, Value, Unit) %>%
-  rename(female_managers = Value)
-
-share_of_seats_on_boards<- t1 %>%
-  filter(Indicator == "Female share of seats on boards of the largest publicly listed companies") %>%
-  dplyr::select(Country, Sex, Age.Group, Time, Value, Unit) %>%
-  rename(share_of_seats_on_boards = Value)
-
-
-#Unpaid work time among men 
+#Creating a new dataframe to find difference in unpaid time among men and women 
 unpaid_men <- unpaid_time%>%
   filter (Sex %in% "Men")
 
-#Unpaid work time among women 
 unpaid_women <- unpaid_time%>%
   filter (Sex %in% "Women")
 
-#merging the two datasets 
 unpaid_total <- merge(unpaid_men,unpaid_women, by= "Country")
 unpaid_total<- unpaid_total%>%
  mutate(unpaid_diff= unpaid_time.y-unpaid_time.x)
 
-#creating new variable by converting minutes to hours per day
 unpaid_total<- unpaid_total%>%
-  mutate (unpaid_diff_hours_per_day=unpaid_diff/24)
+  mutate (unpaid_diff_hours_per_day=unpaid_diff/24)%>%
+  rename ( )
 
-#paid work time among men 
+#Creating a new dataframe to find difference in paid time among men and women 
 paid_men <- paid_time%>%
   filter (Sex %in% "Men")
 
-#paid work time among women 
 paid_women <- paid_time%>%
   filter (Sex %in% "Women")
 
-#merging the two datatsets 
 paid_total <- merge(paid_men,paid_women, by= "Country")
 paid_total<- paid_total%>%
  mutate(paid_diff= paid_time.x-paid_time.y)
 
-#creating new variable by converting minutes to hours per day 
 paid_total<- paid_total%>%
   mutate (paid_diff_hours_per_day=paid_diff/24)
 
-#total work time among men 
-total_time_men <- total_time%>%
-  filter (Sex %in% "Men")
-
-#total work time among women 
-total_time_women <- total_time%>%
-  filter (Sex %in% "Women")
-
-#merging the two datatsets 
-total_time_combined <- merge(total_time_men,total_time_women, by= "Country")
-total_time_combined<- total_time_combined%>%
- mutate(total_diff= total_time.y-total_time.x)
-
-#creating new variable by converting minutes to hours per day 
-total_time_combined<- total_time_combined%>%
-  mutate (total_time_combined_hours=total_diff/24)
-
 ```
 
+### Plot 1 : Difference in time spent in unpaid work in European countries (Latest Year)
+
+This plots looks specifically at countries in Europe.The year in which this data was recorded is not determined in the dataset as the recorded year is coded as 'Latest Year'. This is a limitation of the dataset. 
+
+Plot 1 Interpretation: 
+
 ```{r}
-#Difference in time spent in unpaid work in OECD countries in the latest year (not sure if this refers to 2020 or any year before so this is a limitation of the dataset)
 
 # Pulling out world map data frame
 world_map = map_data("world")%>%
@@ -174,25 +151,13 @@ p1
 
 ```
 
+### Plot 2:Difference in time spent in paid work in Euporean countries (Latest Year)
+
+This plots looks specifically at countries in Europe.The year in which this data was recorded is not determined in the dataset as the recorded year is coded as 'Latest Year'. This is a limitation of the dataset. 
+
+Plot 2 Interpretation: 
+
 ```{r}
-#Difference in time spent in paid work paid work in OECD countries in the latest year (not sure if this refers to 2020 or any year before; this is a limitation of the dataset)
-
-# Pulling out world map data frame
-world_map = map_data("world")%>%
-  rename(Country="region")
-
-#Recoding names
-
-country_key = data.frame(rbind(c("United Kingdom", "UK"), 
-                               c("United States", "USA")))
-names(country_key) = c("Merged1", "map")
-
-# Create named vector for recoding country names
-recode_map <- country_key$Merged1; names(recode_map) = country_key$map
-
-# Recode country names in world map data to match with Merged1 Dataset
-world_map <- world_map %>%
-  mutate(Country = recode(Country, !!!recode_map))
 
 #Combining datasets 
 paid_map<- left_join(paid_total, world_map, by = "Country")
@@ -226,42 +191,19 @@ p2 <- paid_map %>%
 p2
 ```
 
-```{r}
-#Difference in time spent in total work in OECD countries in the latest year (not sure if this refers to 2020 or any year before so this is a limitation of the dataset)
+### Plots 3 & 4: Share of female seats in the parliament in North and South America (Comparison between years 2006 and 2016)
 
-#Not sure how to do this because some values are neg 
+These plots look specifically at 6 countries in North and South America. The first plot looks at data for the year 2016 and the second plot looks at data for the year 2006. The reason for only looking at these countries is due to sparse data. Latest data available was for the year 2016. 
 
+Interpretation: 
 
-```
-
-
-```{r}
-
-#Proportion of women in parliament in North and South American countries 
-#Comparison between years 2016 and 2006 
+```{r, warning=FALSE}
 
 #Using the full country dataset to have more variables 
 women_in_parliament_map <- ALLCOUNTRY%>%
   filter(Indicator == "Female share of seats in national parliaments") %>%
   dplyr::select(Country, Sex, Age.Group, Time, Value) %>%
-  rename(parliament_female_share_seats = Value)
-
-# Pulling out world map data frame
-world_map = map_data("world")%>%
-  rename(Country="region")
-
-#Recoding names
-
-country_key = data.frame(rbind(c("United Kingdom", "UK"), 
-                               c("United States", "USA")))
-names(country_key) = c("Merged1", "map")
-
-# Create named vector for recoding country names
-recode_map <- country_key$Merged1; names(recode_map) = country_key$map
-
-# Recode country names in world map data to match with Merged1 Dataset
-world_map <- world_map %>%
-  mutate(Country = recode(Country, !!!recode_map))
+  rename(parliament_female_share_seats_all = Value)
 
 #Combining datasets 
 parliament_map<- left_join(women_in_parliament_map, world_map, by = "Country")
@@ -284,7 +226,7 @@ parliament_labels_2006 <- parliament_map %>%filter(Time == 2006)%>%
 #Creating the plots 
 p3 <- parliament_map %>% filter(Time == 2016) %>%
   ggplot(aes(x = long, y = lat)) +
-  geom_polygon(aes(fill = parliament_female_share_seats, group=group), color = "white")+
+  geom_polygon(aes(fill = parliament_female_share_seats_all, group=group), color = "white")+
    scale_fill_gradient(limits=c(0,50),"Percentage of Seats", low = "#E0F7FA",
   high = "#1A237E" ) +
   coord_fixed(1.3)+
@@ -301,7 +243,7 @@ p3 <- parliament_map %>% filter(Time == 2016) %>%
 
 p4 <- parliament_map %>% filter(Time == 2006) %>%
   ggplot(aes(x = long, y = lat)) +
-  geom_polygon(aes(fill = parliament_female_share_seats, group=group), color = "white")+
+  geom_polygon(aes(fill = parliament_female_share_seats_all, group=group), color = "white")+
    scale_fill_gradient(limits=c(0,50),"Percentage of Seats", low = "#E0F7FA",
   high = "#1A237E" ) +
   coord_fixed(1.3)+
@@ -319,31 +261,24 @@ p4 <- parliament_map %>% filter(Time == 2006) %>%
 ggarrange(p4, p3)
 ```
 
-```{r}
+### Plot 5: Share of females in managerial positions worldwide in 2019 
 
-#Proportion of Female Managers in the world
-######Need to figure out how to fill in for missing countries like Canada#######
+Due to sparse data, some countries are missing from the map. This was difficult to troubleshoot because after filtering for 2019, countries without data on share of females in managerial positions in 2019 got removed from the dataframe hence making it difficult to fully join with the map dataset. 
+
+Interpretation: 
+
+
+```{r, warning=FALSE}
+
 female_managers_map <- ALLCOUNTRY%>%
  filter(Indicator == "Share of female managers") %>%
 dplyr::select(Country, Sex, Age.Group, Time, Value) %>%
 rename(Share_of_female_managers = Value)
-# Pulling out world map data frame
-world_map = map_data("world")%>%
-  rename(Country="region")
-#Recoding names
-country_key = data.frame(rbind(c("United Kingdom", "UK"), 
-                               c("United States", "USA")))
-names(country_key) = c("Merged1", "map")
-# Create named vector for recoding country names
-recode_map <- country_key$Merged1; names(recode_map) = country_key$map
-# Recode country names in world map data to match with Merged1 Dataset
-world_map <- world_map %>%
-  mutate(Country = recode(Country, !!!recode_map))
 
 #Combining datasets 
 managers_map<- inner_join(female_managers_map, world_map, by = "Country", all=TRUE)
-#Creating labels by filtering for 2019 data 
 
+#Creating labels by filtering for 2019 data 
 managers_labels<- managers_map %>% filter(Time==2019)%>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
@@ -356,7 +291,7 @@ p5 <- managers_map %>% filter(Time==2019)%>%
    scale_fill_gradient("Percentage", limits=c(5,50),low="skyblue", high="dodgerblue4" ) +
    coord_fixed(1.3) +
   geom_text_repel(min.segment.length = Inf, data = managers_labels, aes(long, lat, label = Country), color = "black") +
-   ggtitle("Percentage of Women in Managerial Positions Worldwide (2019)")+
+   ggtitle("Percentage of Managerial Positions Occupied by Women (2019)")+
  theme(panel.grid.major = element_blank(), 
     panel.background = element_blank(),
        axis.title = element_blank(), 
@@ -366,34 +301,27 @@ p5 <- managers_map %>% filter(Time==2019)%>%
     legend.position = "bottom",
     plot.title = element_text(face="bold"))
 
-
+p5
 ```
 
+### Plots 6 & 7: Share of females in managerial positions in Asia (Comparison between years 2019 and 2010)
 
+These plots focus on countries in Asia. Due to sparse data, the plot only includes 4 countries. Russia is included in these plots as it falls partly in the Asian continent.I chose to look at 2019 and 2010 because data for 2020 was not available. 
+
+Interpretation: 
 ```{r}
 #Share of female managers in Asia
 female_managers_map <- ALLCOUNTRY%>%
  filter(Indicator == "Share of female managers") %>%
 dplyr::select(Country, Sex, Age.Group, Time, Value) %>%
-rename(Share_of_female_managers = Value)
-# Pulling out world map data frame
-world_map = map_data("world")%>%
-  rename(Country="region")
-#Recoding names
-country_key = data.frame(rbind(c("United Kingdom", "UK"), 
-                               c("United States", "USA")))
-names(country_key) = c("Merged1", "map")
-# Create named vector for recoding country names
-recode_map <- country_key$Merged1; names(recode_map) = country_key$map
-# Recode country names in world map data to match with Merged1 Dataset
-world_map <- world_map %>%
-  mutate(Country = recode(Country, !!!recode_map))
+rename(Share_of_female_managers_all = Value)
 
 #Filtering for asian countries 
 managers_map_asia<-female_managers_map%>% filter (Country %in% c("Japan", "India","Indonesia", "Russia" ))
 
 #Combining datasets 
 managers_map_asia<- inner_join(managers_map_asia, world_map, by = "Country", all=TRUE)
+
 #Creating labels by filtering for 2019 data 
 managers_labels_2019<- managers_map_asia %>% filter(Time==2019)%>%
   group_by(Country) %>%
@@ -403,20 +331,17 @@ managers_labels_2019<- managers_map_asia %>% filter(Time==2019)%>%
 #Creating the plot 
 p6 <- managers_map_asia %>% filter(Time==2019)%>%
   ggplot(aes(x = long, y = lat)) +
-  geom_polygon(aes(fill =Share_of_female_managers, group=group), color = "white")+
+  geom_polygon(aes(fill =Share_of_female_managers_all, group=group), color = "white")+
    scale_fill_gradient("Percentage",limits=c(0,50),low="mistyrose", high="mistyrose4" ) +
   geom_text_repel(min.segment.length = Inf, data = managers_labels_2019, aes(long, lat, label = Country), color = "black") +
-  coord_fixed(1.3)+
-   ggtitle("Percentage of Women in Managerial Positions in Asia (2019)")+
+   ggtitle("Percentage of Managerial Positions Occupied by Women in Asia (2019)")+
  theme(panel.grid.major = element_blank(), 
     panel.background = element_blank(),
        axis.title = element_blank(), 
       axis.text = element_blank(),
      axis.ticks = element_blank(),
-    legend.title = element_text(size=10),
+    legend.title = element_text(size=9),
     plot.title = element_text(face="bold"))
-
-p6
 
 #Creating labels by filtering for 2010 data 
 managers_labels_2010<- managers_map_asia %>% filter(Time==2010)%>%
@@ -427,52 +352,30 @@ managers_labels_2010<- managers_map_asia %>% filter(Time==2010)%>%
 #Creating the plot 
 p7 <- managers_map_asia %>% filter(Time==2010)%>%
   ggplot(aes(x = long, y = lat)) +
-  geom_polygon(aes(fill =Share_of_female_managers, group=group), color = "white")+
+  geom_polygon(aes(fill =Share_of_female_managers_all, group=group), color = "white")+
    scale_fill_gradient("Percentage",limits=c(0,50),  low="mistyrose", high="mistyrose4" ) +
   geom_text_repel(min.segment.length = Inf, data = managers_labels_2010, aes(long, lat, label = Country), color = "black") +
-  coord_fixed(1.3)+
-   ggtitle("Percentage of Women in Managerial Positions in Asia (2010)")+
+   ggtitle("Percentage of Managerial Positions Occupied by Women in Asia (2010)")+
  theme(panel.grid.major = element_blank(), 
     panel.background = element_blank(),
        axis.title = element_blank(), 
       axis.text = element_blank(),
      axis.ticks = element_blank(),
-    legend.title = element_text(size=10),
+    legend.title = element_text(size=9),
     plot.title = element_text(face="bold"))
 
 grid.arrange(p7,p6)
 ```
 
+### Plots 8 & 9: Female share of seats on boards of the largest publicly listed companies among countries in Europe (Comparison between years 2020 and 2010) 
 
+Interpretation: 
 ```{r}
 
-#Female share of seats on boards of the largest publicly listed companies among countries in Europe  
-#Comparison between years 2020 and 2010 
-
-
-#
 share_of_seats_on_board_map <- ALLCOUNTRY%>%
  filter(Indicator == "Female share of seats on boards of the largest publicly listed companies") %>%
 dplyr::select(Country, Sex, Age.Group, Time, Value) %>%
-rename(Share_of_seats_in_boards = Value)
-
-#Proportion of women in parliament in the world  
-# Pulling out world map data frame
-world_map = map_data("world")%>%
-  rename(Country="region")
-
-#Recoding names
-
-country_key = data.frame(rbind(c("United Kingdom", "UK"), 
-                               c("United States", "USA")))
-names(country_key) = c("Merged1", "map")
-
-# Create named vector for recoding country names
-recode_map <- country_key$Merged1; names(recode_map) = country_key$map
-
-# Recode country names in world map data to match with Merged1 Dataset
-world_map <- world_map %>%
-  mutate(Country = recode(Country, !!!recode_map))
+rename(Share_of_seats_in_boards_all = Value)
 
 #Combining datasets 
 board_map<- left_join(share_of_seats_on_board_map, world_map, by = "Country")
@@ -493,9 +396,9 @@ board_labels_2010<- board_map %>% filter(Time==2010)%>%
             long = mean(long))
 
 #Creating the plots
-p7 <- board_map %>% filter(Time==2020)%>%
+p8 <- board_map %>% filter(Time==2020)%>%
   ggplot(aes(x = long, y = lat)) +
-  geom_polygon(aes(fill =Share_of_seats_in_boards, group=group), color = "white")+
+  geom_polygon(aes(fill =Share_of_seats_in_boards_all, group=group), color = "white")+
    scale_fill_gradient2("Percentage of Seats" , limits=c(0,50), low = "#E0F2F1",
   high = "#006064") +
   geom_text_repel(min.segment.length = Inf, data = board_labels_2020, aes(long, lat, label = Country), color = "black") +
@@ -508,9 +411,9 @@ p7 <- board_map %>% filter(Time==2020)%>%
         plot.title = element_text(size = 10, hjust=0.5, face="bold"),
     legend.title = element_text(size=10))
 
-p8 <- board_map %>% filter(Time==2010)%>%
+p9 <- board_map %>% filter(Time==2010)%>%
   ggplot(aes(x = long, y = lat)) +
-  geom_polygon(aes(fill =Share_of_seats_in_boards, group=group), color = "white")+
+  geom_polygon(aes(fill =Share_of_seats_in_boards_all, group=group), color = "white")+
    scale_fill_gradient("Percentage of Seats" ,limits=c(0,50), low = "#E0F2F1",
   high = "#006064") +
   geom_text_repel(min.segment.length = Inf, data = board_labels_2010, aes(long, lat, label = Country), color = "black") +
@@ -524,6 +427,6 @@ p8 <- board_map %>% filter(Time==2010)%>%
     legend.title = element_text(size=10))
 
 #Putting the plots in one grid        
-grid.arrange(p8, p7)
+grid.arrange(p9, p8)
 ```
 
