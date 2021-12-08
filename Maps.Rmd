@@ -353,10 +353,10 @@ managers_labels<- managers_map %>% filter(Time==2019)%>%
 p5 <- managers_map %>% filter(Time==2019)%>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill =Share_of_female_managers, group=group), color = "white")+
-   scale_fill_gradient("Percentage of Female Managers", limits=c(5,50),low="skyblue", high="dodgerblue4" ) +
+   scale_fill_gradient("Percentage", limits=c(5,50),low="skyblue", high="dodgerblue4" ) +
    coord_fixed(1.3) +
   geom_text_repel(min.segment.length = Inf, data = managers_labels, aes(long, lat, label = Country), color = "black") +
-   ggtitle("Female Managers Worldwide (2019)")+
+   ggtitle("Percentage of Women in Managerial Positions Worldwide (2019)")+
  theme(panel.grid.major = element_blank(), 
     panel.background = element_blank(),
        axis.title = element_blank(), 
@@ -404,10 +404,10 @@ managers_labels_2019<- managers_map_asia %>% filter(Time==2019)%>%
 p6 <- managers_map_asia %>% filter(Time==2019)%>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill =Share_of_female_managers, group=group), color = "white")+
-   scale_fill_gradient("Percentage of Female Managers",limits=c(0,50),low="mistyrose", high="mistyrose4" ) +
+   scale_fill_gradient("Percentage",limits=c(0,50),low="mistyrose", high="mistyrose4" ) +
   geom_text_repel(min.segment.length = Inf, data = managers_labels_2019, aes(long, lat, label = Country), color = "black") +
   coord_fixed(1.3)+
-   ggtitle("Female Managers in Asia (2019)")+
+   ggtitle("Percentage of Women in Managerial Positions in Asia (2019)")+
  theme(panel.grid.major = element_blank(), 
     panel.background = element_blank(),
        axis.title = element_blank(), 
@@ -428,10 +428,10 @@ managers_labels_2010<- managers_map_asia %>% filter(Time==2010)%>%
 p7 <- managers_map_asia %>% filter(Time==2010)%>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill =Share_of_female_managers, group=group), color = "white")+
-   scale_fill_gradient("Percentage of Female Managers",limits=c(0,50),  low="mistyrose", high="mistyrose4" ) +
+   scale_fill_gradient("Percentage",limits=c(0,50),  low="mistyrose", high="mistyrose4" ) +
   geom_text_repel(min.segment.length = Inf, data = managers_labels_2010, aes(long, lat, label = Country), color = "black") +
   coord_fixed(1.3)+
-   ggtitle("Female Managers in Asia (2010)")+
+   ggtitle("Percentage of Women in Managerial Positions in Asia (2010)")+
  theme(panel.grid.major = element_blank(), 
     panel.background = element_blank(),
        axis.title = element_blank(), 
