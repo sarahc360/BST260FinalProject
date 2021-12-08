@@ -208,34 +208,39 @@ women_in_parliament_map_2016 <- ALLCOUNTRY%>%
 women_in_parliament_map_2006 <- ALLCOUNTRY%>%
   filter(Indicator == "Female share of seats in national parliaments") %>%
   dplyr::select(Country, Sex, Age.Group, Time, Value) %>%
-  rename(parliament_female_share_seats_all = Value)%>%filter(Time==2006)
-
+  rename(parliament_female_share_seats_all = Value)%>% filter(Time==2006)
 
 #Combining datasets 
-parliament_map_2016<- full_join(women_in_parliament_map_2016, world_map, by = "Country")%>%
-  mutate(Time=2016)
+parliament_map_2016<- right_join(women_in_parliament_map_2016, world_map, by = "Country")
 
-parliament_map_2006<- full_join(women_in_parliament_map_2006, world_map, by = "Country")%>%
-  mutate(Time=2006)
+parliament_map_2006<- right_join(women_in_parliament_map_2006, world_map, by = "Country")
+
+
+
+#Filtering North and South American Countries 
+#parliament_map <- parliament_map%>% filter (Country %in% c("Canada","United States", "Brazil","Mexico", "Colombia", "Chile" ))
 
 #Creating labels for countries with 2016 data 
 parliament_labels_2016 <- parliament_map_2016 %>%
+  filter(Country %in% c("United States", "Brazil", "Chile", "Norway", "Russia", "Turkey", "Lesotho", "India", "Japan", "Indonesia", "Mexico", "Australia", "Finland", "Sweden","Estonia", "United Kingdom", "Denmark", "Latvia", "Netherlands", "Germany", "Lithuana", "Belgium", "Ireland", "Austria", "Poland", "Luxembourg", "France", "Slovenia", "Hungary", "Portugal", "Spain", "Italy", "Greece"))%>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
             long = mean(long))
 
 #creating labels for countries with 2006 data 
 parliament_labels_2006 <- parliament_map_2006 %>%
+  filter(Country %in% c("United States", "Brazil", "Chile", "Norway", "Russia", "Turkey", "Lesotho", "India", "Japan", "Indonesia", "Mexico", "Australia", "Finland", "Sweden","Estonia", "United Kingdom", "Denmark", "Latvia", "Netherlands", "Germany", "Lithuana", "Belgium", "Ireland", "Austria", "Poland", "Luxembourg", "France", "Slovenia", "Hungary", "Portugal", "Spain", "Italy", "Greece"))%>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
             long = mean(long))
 
 #Creating the plots 
-p3 <- parliament_map_2016 %>% 
+p3 <- parliament_map_2016 %>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill = parliament_female_share_seats_all, group=group), color = "white")+
    scale_fill_gradient(limits=c(0,50),"Percentage of Seats", low = "#E0F7FA",
-  high = "#1A237E", na.value= 'grey' ) +
+  high = "#1A237E", na.value='grey' ) +
+  coord_fixed(1)+
   geom_text_repel(data = parliament_labels_2016, aes(long, lat, label = Country), color = "black") +
     ggtitle("Women in Parliament in North and South America (2016)")+
  theme(panel.grid.major = element_blank(), 
@@ -245,14 +250,14 @@ p3 <- parliament_map_2016 %>%
      axis.ticks = element_blank(),
     plot.title = element_text(face="bold"))
 
+p3
 
-p4 <- parliament_map %>%
-  ggplot() +
-  geom_polygon(aes(x = long, y = lat,fill = parliament_female_share_seats_all, group=group), color = "white")+
- coord_map(projection = "mercator",
-            xlim = c(-200,0), ylim = c(-40,150)) +
+p4 <- parliament_map_2006 %>%
+  ggplot(aes(x = long, y = lat)) +
+  geom_polygon(aes(fill = parliament_female_share_seats_all, group=group), color = "white")+
    scale_fill_gradient(limits=c(0,50),"Percentage of Seats", low = "#E0F7FA",
-  high = "#1A237E", na.value= 'grey' ) +
+  high = "#1A237E", na.value='grey'  ) +
+  coord_fixed(1)+
   geom_text_repel( data = parliament_labels_2006, aes(long, lat, label = Country), color = "black") +
   ggtitle("Women in Parliament in North and South America (2006)")+
  theme(panel.grid.major = element_blank(), 
@@ -261,15 +266,14 @@ p4 <- parliament_map %>%
       axis.text = element_blank(),
      axis.ticks = element_blank(),
     plot.title = element_text(face="bold"))
-
 #Arranging the plots in the same grid 
-ggarrange(p4, p3)
 
+p4
 ```
 
 ### Plot 5: Share of females in managerial positions worldwide in 2019 
 
-Due to sparse data, some countries are missing from the map. This was difficult to troubleshoot because after filtering for 2019, countries without data on share of females in managerial positions in 2019 got removed from the dataframe hence making it difficult to fully join with the map dataset. 
+Due to sparse data, a lot of countries are missing from the map. 
 
 Interpretation: From the plot, we can see that the percentage of managerial positions occupied by Women in 2019 is significantly higher in Russia, North and South America, and parts of Europe as compared to Asia. Turkey, Japan, India, Germany and Italy seem to have significantly lower percentage of women in managerial positions. This data supports the information from plots 1 and 2 where we saw that Turkey and Italy have the highest difference in both unpaid work and paid work among men and women. Through this we can interpret that the share of females in managerial positions might be lower in countries where women spend more time in unpaid work than men/ where men spend more time in paid work than women. 
 
@@ -287,6 +291,7 @@ managers_map<- full_join(female_managers_map, world_map, by = "Country", all=TRU
 
 #Creating labels by filtering for 2019 data 
 managers_labels<- managers_map %>%
+  filter(Country %in% c("United States", "Brazil", "Chile", "Norway", "Russia", "Turkey", "Lesotho", "India", "Japan", "Indonesia"))%>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
             long = mean(long))
