@@ -1,8 +1,11 @@
 ---
-title: "SC_MachineLearning"
+title: "Predicting Parental Leave"
 output: html_document
 ---
-### DON'T COPY THIS CODE INTO FINAL .Rmd
+
+In this section we will using machine learning to create models that can predict the total length of paid maternity and parental leave given year, country, and other measures related to women in the workforce and in policy making positions. We will use utilize several machine learning techniques to try and find the best fitting model. 
+
+We will start by reading in the required data. 
 
 ```{r}
 library(dplyr)
@@ -36,7 +39,8 @@ ALLCOUNTRY <- ALLCOUNTRY %>%
   dplyr::select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
 ```
 
-To filter *only* OECD countries:
+Now we will filer the data to only include OECD countries:
+
 ```{r}
 OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
 
@@ -44,12 +48,8 @@ t1 <- ALLCOUNTRY %>%
   filter (Country %in% OECD_label)
 ```
 
-### COPY STARTING HERE 
+Next, we need to call all the needed libraries and wrangle the data into a single, usable dataframe. 
 
-
-In this section we will using machine learning to create models that can predict the total length of paid maternity and parental leave given year, country, and other measures related to women in the workforce and in policy making positions. We will use utilize several machine learning techniques to try and find the best fitting model. 
-
-First, we will need to call all the libraries we will be using and set up the data. 
 ```{r}
 library(fastDummies)
 library(dplyr)
@@ -107,7 +107,7 @@ scdatALL <- scdata_list %>%
 scdatALL$Time <- as.numeric(scdatALL$Time)
 ```
 
-Now that the data are cleaned and put together, let's explore it a little bit. We will see that the outcome of interest can be either continuous (in weeks), or dichotomous (0-18 weeks, 19+ weeks). We will also see that we have a lot of missing data. Below, we explore ways in which was can deal with that missing data and will finalize our dataset that we will use for our modeling.
+Now that the data are cleaned and put together, let's explore it a little bit. We will see that the outcome of interest can be either continuous (in weeks), or dichotomous (0-18 weeks, 19+ weeks). We will also see that we have a lot of missing data. Below, we explore ways in which was can deal with that missing data and will finalize the dataset that we will use for our machine learning models. See commented code below for more detail.
 
 ```{r}
 # Explore the outcome data (in weeks)
@@ -144,7 +144,8 @@ scdatALL <- subset(scdatALL, select = -c(manager))
 scdatALL <- scdatALL %>% na.omit()
 ```
 
-Now that we have a cleaned dataset, we can get on with fitting our machine learning models.
+Now that we have a cleaned dataset, we can get on with fitting our machine learning models. Here we have chosen to compare three machine learning models to see which gives us the best predictive value. We will compare a logistic regression model, a k nearest neighbors model, and a naive bayes model. 
+
 ```{r}
 # Break data into training and test sets
 set.seed(1)
@@ -197,4 +198,4 @@ auc(scroc_knn)
 auc(scroc_nb)
 ```
 
-Based on the plotted curves shown above, if we are trying to predict whether a country would have more or less than 18 weeks of total paid parental leave given the year, labor force ratio of men/women, female representation in parliament, and female share of board seats, we would want to select the k nearest neighbors model (k = 8) which gives us the best sensitivity and specificity at almost every cutoff point. 
+The plotted curves shown above confirm what we found using the confusion matrices: if we want to predict whether a country would have more or less than 18 weeks of total paid parental leave given the year, labor force ratio of men/women, female representation in parliament, and female share of board seats, we would want to select the k nearest neighbors model (k = 8) which gives us the best sensitivity and specificity at almost every cutoff point. 
