@@ -73,8 +73,7 @@ unpaid_total<- unpaid_total%>%
  mutate(unpaid_diff= unpaid_time.y-unpaid_time.x)
 
 unpaid_total<- unpaid_total%>%
-  mutate (unpaid_diff_hours_per_day=unpaid_diff/24)%>%
-  rename ( )
+  mutate (unpaid_diff_hours_per_day=unpaid_diff/24)
 
 #Creating a new dataframe to find difference in paid time among men and women 
 paid_men <- paid_time%>%
@@ -96,18 +95,6 @@ paid_total<- paid_total%>%
 
 ```{r}
 
-```
-
-### Plot 2:Difference in time spent in paid work worldwide 
-
-```{r}
-
-```
-
-### Plot 1: Difference in time spent in unpaid work in European countries (Latest Year)
-
-```{r}
-
 # Pulling out world map data frame
 world_map = map_data("world")%>%
   rename(Country="region")
@@ -126,67 +113,140 @@ world_map <- world_map %>%
   mutate(Country = recode(Country, !!!recode_map))
 
 #Join the two datasets 
-Unpaid_map<- left_join(unpaid_total, world_map, by = "Country")
+Unpaid_map_full<- right_join(unpaid_total, world_map, by = "Country")
 
-
-# Filtering out non- European countries 
-Unpaid_map <- Unpaid_map%>% filter (!Country %in% c("Australia", "Canada", "Japan", "Korea", "United States", "Mexico", "New Zealand"))
 
 #Create labels for countries 
-labels <- Unpaid_map %>%
+unpaid_labels_full <- Unpaid_map_full %>%
+  filter (Country %in% c("Australia", "Canada", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States"))%>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
             long = mean(long))
 
 #Creating the plot 
-p1 <- Unpaid_map %>%
+p1 <- Unpaid_map_full %>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill = unpaid_diff_hours_per_day, group=group), color = "white")  +
  scale_fill_gradient("Hours Per Day", low = "#EDE7F6",
-  high = "#512DA8" ) +
-  geom_text_repel(min.segment.length = Inf, data = labels, aes(long, lat, label = Country), color = "black") +
-  coord_fixed(1) +
+  high = "#512DA8", na.value= 'grey' ) +
+  coord_fixed(1.3)+
+  geom_text_repel(min.segment.length = Inf, data = unpaid_labels_full, aes(long, lat, label = Country), color = "black") +
  theme(panel.grid.major = element_blank(), 
     panel.background = element_blank(),
        axis.title = element_blank(), 
       axis.text = element_blank(),
      axis.ticks = element_blank(),
-     plot.title = element_text(size = 10, hjust=0.3, face = "bold"),
+     plot.title = element_text(size = 12, hjust= 0.5, face = "bold"),
     legend.title = element_text(size=10))+
-  ggtitle("Excess Time Spent Per Day in Unpaid Work by Women Compared to Men (Latest Year)")
+  ggtitle("Excess Time Spent Per Day in Unpaid Work \n by Women Compared to Men (Latest Year)")
 
 p1
 
-
 ```
 
-This plots looks specifically at countries in Europe.The year in which this data was recorded is not determined in the dataset as the recorded year is coded as 'Latest Year'. This is a limitation of the dataset. From the descriptive statistics section, we know that time spent in unpaid work is higher among women than men in all countries in our OECD dataset. For this plot, I created a variable 'unpaid_diff_hours_per_day' to capture that difference in time spent in unpaid work among men and women. 
+Since we are only looking at OECD countries, there's a lot of countries for which data on time spent in unpaid work is missing from the map. The year in which this data was recorded is not determined in the dataset as the recorded year is coded as 'Latest Year'. This is a limitation of the dataset. For this plot, I created a single variable 'unpaid_diff_hours_per_day' to capture the difference in time spent in unpaid work among men and women since women spent more time in unpaid work than men in all countries in the dataset. 
 
-Plot 1 Interpretation: From the plot, we can see that time spent in unpaid work by women is especially high in Turkey and Portugal and a little less so but still significantly high in Austria, Ireland, Italy, Poland, Lithuana and Latvia. 
+Interpretation for Plot 1: We can see on the plot that there is a difference in hours spent in unpaid work between men and women in all OECD countries with women spending more time than men. This difference seems to be significantly higher in Turkey and Mexico where women seem to be spending ~ 8 hours more per day than men in unpaid work. 
 
-### Plot 2: Difference in time spent in paid work in Euporean countries (Latest Year)
+### Plot 2: Difference in time spent in paid work worldwide 
 
 ```{r}
+#Join the two datasets 
+paid_map_full<- right_join(paid_total, world_map, by = "Country")
 
-#Combining datasets 
-paid_map<- left_join(paid_total, world_map, by = "Country")
 
-#filtering out non-European countries 
-paid_map <- paid_map%>% filter (!Country %in% c("Australia", "Canada", "Japan", "Korea", "United States", "Mexico", "New Zealand"))
-
-#Creating labels for countries 
-labels <- paid_map %>%
+#Create labels for countries 
+paid_labels_full <- paid_map_full %>%
+    filter (Country %in% c("Australia", "Canada", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Ireland", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States"))%>%
   group_by(Country) %>%
   summarize(lat = mean(lat),
             long = mean(long))
 
 #Creating the plot 
-p2 <- paid_map %>%
+p2 <- paid_map_full %>%
+  ggplot(aes(x = long, y = lat)) +
+  geom_polygon(aes(fill = paid_diff_hours_per_day, group=group), color = "white")  +
+ scale_fill_gradient("Hours Per Day", low = "#EDE7F6",
+  high = "#512DA8", na.value= 'grey' ) +
+  coord_fixed(1.3)+
+  geom_text_repel(min.segment.length = Inf, data = paid_labels_full, aes(long, lat, label = Country), color = "black") +
+ theme(panel.grid.major = element_blank(), 
+    panel.background = element_blank(),
+       axis.title = element_blank(), 
+      axis.text = element_blank(),
+     axis.ticks = element_blank(),
+     plot.title = element_text(size = 12, hjust= 0.5, face = "bold"),
+    legend.title = element_text(size=10))+
+  ggtitle("Excess Time Spent Per Day in Paid Work \n by Men Compared to Women (Latest Year)")
+
+p2
+```
+
+Interpretation of Plot 2: From the plot we can see that men tend to spend more hours in paid work than women and this difference is significantly higher in Mexico and Turkey where men spend ~ 10 hours more per day in paid work as compared to women. This finding suggests that in countries like Turkey and Mexico where women spend more time in unpaid work than men, men spend more time in paid work than women. 
+
+### Plot 3: Difference in time spent in unpaid work in European countries (Latest Year)
+
+```{r}
+
+#Join the two datasets 
+Unpaid_map_europe<- left_join(unpaid_total, world_map, by = "Country")
+
+
+# Filtering out non- European countries 
+Unpaid_map_europe <- Unpaid_map_europe%>% filter (!Country %in% c("Australia", "Canada", "Japan", "Korea", "United States", "Mexico", "New Zealand"))
+
+#Create labels for countries 
+unpaid_labels_europe <- Unpaid_map_europe %>%
+  group_by(Country) %>%
+  summarize(lat = mean(lat),
+            long = mean(long))
+
+#Creating the plot 
+p3 <- Unpaid_map_europe %>%
+  ggplot(aes(x = long, y = lat)) +
+  geom_polygon(aes(fill = unpaid_diff_hours_per_day, group=group), color = "white")  +
+ scale_fill_gradient("Hours Per Day", low = "#EDE7F6",
+  high = "#512DA8" ) +
+  geom_text_repel(min.segment.length = Inf, data = unpaid_labels_europe, aes(long, lat, label = Country), color = "black") +
+ theme(panel.grid.major = element_blank(), 
+    panel.background = element_blank(),
+       axis.title = element_blank(), 
+      axis.text = element_blank(),
+     axis.ticks = element_blank(),
+     plot.title = element_text(size = 10, hjust=0.5, face = "bold"),
+    legend.title = element_text(size=10))+
+  ggtitle("Excess Time Spent Per Day in Unpaid Work \n by Women Compared to Men in Europe (Latest Year)")
+
+p3
+
+
+```
+
+Interpretation of plot 3: From the plot, we can see that time spent in unpaid work by women is especially high in Turkey and Portugal and a little less so but still significantly high in Austria, Ireland, Italy, Poland, Lithuana and Latvia. 
+
+### Plot 4: Difference in time spent in paid work in Euporean countries (Latest Year)
+
+```{r}
+
+#Combining datasets 
+paid_map_europe<- left_join(paid_total, world_map, by = "Country")
+
+#filtering out non-European countries 
+paid_map_europe <- paid_map_europe%>% filter (!Country %in% c("Australia", "Canada", "Japan", "Korea", "United States", "Mexico", "New Zealand"))
+
+#Creating labels for countries 
+paid_labels_europe <- paid_map_europe %>%
+  group_by(Country) %>%
+  summarize(lat = mean(lat),
+            long = mean(long))
+
+#Creating the plot 
+p4 <- paid_map_europe %>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill = paid_diff_hours_per_day, group=group), color = "white")  +
  scale_fill_gradient("Hours Per Day", low = "#EDE7F6",
   high = "#512DA8" ) +
-  geom_text_repel(min.segment.length = Inf, data = labels, aes(long, lat, label = Country), color = "black") +
+  geom_text_repel(min.segment.length = Inf, data = paid_labels_europe, aes(long, lat, label = Country), color = "black") +
   coord_fixed(1) +
  theme(panel.grid.major = element_blank(), 
     panel.background = element_blank(),
@@ -195,16 +255,14 @@ p2 <- paid_map %>%
      axis.ticks = element_blank(),
      plot.title = element_text(size = 10, hjust=0.3, face = "bold"),
      legend.title = element_text(size=10))+
-  ggtitle("Excess Time Spent Per Day in Paid Work by Men Compared to Women (Latest Year)")
+  ggtitle("Excess Time Spent Per Day in Paid Work \n by Men Compared to Women in Europe (Latest Year)")
 
-p2
+p4
 ```
 
-This plots looks specifically at countries in Europe.The year in which this data was recorded is not determined in the dataset as the recorded year is coded as 'Latest Year'. This is a limitation of the dataset. From the descriptive statistics section, we again know that time spent in paid work is higher among men than women in all countries in our OECD dataset. For this plot, I created a variable 'paid_diff_hours_per_day' to capture that difference in time spent in paid work among men and women. 
+Interpretation of plot 4: From the plot, we can see that time spent in paid work by men is significantly higher in Turkey followed by Portugal, Ireland, Austria, Lithuana and Poland. These results make sense because these were the same countries in which women were spending more time doing unpaid work. We can hence interpret that women might be spending significantly more time in unpaid work in countries where men are spending significantly more time in paid work.
 
-Plot 2 Interpretation: From the plot, we can see that time spent in paid work by men is significantly higher in Turkey followed by Portugal, Ireland, Austria, Lithuana and Poland. These results make sense because these were the same countries in which women were spending more time doing unpaid work. We can hence interpret that women might be spending significantly more time in unpaid work in countries where men are spending significantly more time in paid work.
-
-### Plots 3 & 4: Share of female seats in the parliament worldwide (Comparison between years 2006 and 2016)
+### Plots 5 & 6: Share of female seats in the parliament worldwide (Comparison between years 2006 and 2016)
 
 ```{r, warning=FALSE}
 
@@ -239,12 +297,12 @@ parliament_labels_2006 <- parliament_map_2006 %>%
             long = mean(long))
 
 #Creating the plots 
-p3 <- parliament_map_2016 %>%
+p5 <- parliament_map_2016 %>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill = parliament_female_share_seats_all, group=group), color = "white")+
    scale_fill_gradient(limits=c(0,50),"Percentage of Seats", low = "#E0F7FA",
   high = "#1A237E", na.value='grey' ) +
-  coord_fixed(1)+
+  coord_fixed(1.3)+
   geom_text_repel(data = parliament_labels_2016, aes(long, lat, label = Country), color = "black") +
     ggtitle("Share of Female Seats in the Parliament Worldwide (2016)")+
  theme(panel.grid.major = element_blank(), 
@@ -254,12 +312,12 @@ p3 <- parliament_map_2016 %>%
      axis.ticks = element_blank(),
     plot.title = element_text(face="bold"))
 
-p4 <- parliament_map_2006 %>%
+p6 <- parliament_map_2006 %>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill = parliament_female_share_seats_all, group=group), color = "white")+
    scale_fill_gradient(limits=c(0,50),"Percentage of Seats", low = "#E0F7FA",
   high = "#1A237E", na.value='grey'  ) +
-  coord_fixed(1)+
+  coord_fixed(1.3)+
   geom_text_repel( data = parliament_labels_2006, aes(long, lat, label = Country), color = "black") +
   ggtitle("Share of Female Seats in the Parliament Worldwide (2006)")+
  theme(panel.grid.major = element_blank(), 
@@ -269,15 +327,15 @@ p4 <- parliament_map_2006 %>%
      axis.ticks = element_blank(),
     plot.title = element_text(face="bold"))
 
-p3
-p4
+p5
+p6
 ```
 
 There's a lot of missing data for this variable. I chose these two years because 2016 was the latest year for this variable in the dataset and I chose 2006 because I wanted to look at a 10-year difference. 
 
-Plots 3 and 4 Interpretation: Looking at the two maps, we can say that there was an overall increase in the percentage of seats occupied by women in parliament between years 2006 and 2016 in North and South America. The percentage change looks most significant in Mexico. It also looks like some countries in Europe already had pretty high percentages in 2006. Data for Russia is interesting because although they have a high percentage of women in managerial positions, they have a pretty low percentage of women in parliament. 
+Interpretation for plots 5 and 6: Looking at the two maps, we can say that there was an overall increase in the percentage of seats occupied by women in parliament between years 2006 and 2016 in North and South America. The percentage change looks most significant in Mexico. It also looks like some countries in Europe already had pretty high percentages in 2006. Data for Russia is interesting because although they have a high percentage of women in managerial positions, they have a pretty low percentage of women in parliament. 
 
-### Plot 5: Share of females in managerial positions worldwide in 2019 
+### Plot 7: Share of females in managerial positions worldwide in 2019 
 
 ```{r, warning=FALSE}
 
@@ -298,10 +356,10 @@ managers_labels<- managers_map %>%
             long = mean(long))
 
 #Creating the plot 
-p5 <- managers_map %>%
+p7 <- managers_map %>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill =Share_of_female_managers, group=group), color = "white")+
-   scale_fill_gradient("Percentage", limits=c(5,50),low="skyblue", high="dodgerblue4", na.value= 'grey') +
+   scale_fill_gradient("Percentage",low="skyblue", high="dodgerblue4", na.value= 'grey') +
    coord_fixed(1.3) +
   geom_text_repel(min.segment.length = Inf, data = managers_labels, aes(long, lat, label = Country), color = "black") +
    ggtitle("Percentage of Managerial Positions Occupied by Women (2019)")+
@@ -314,14 +372,14 @@ p5 <- managers_map %>%
     legend.position = "bottom",
     plot.title = element_text(face="bold"))
 
-p5
+p7
 ```
 
 Due to sparse data, a lot of countries are missing from the map. 
 
-Plot 5 Interpretation: From the plot, we can see that the percentage of managerial positions occupied by Women in 2019 is significantly higher in Russia, North and South America, and parts of Europe as compared to Asia. Turkey, Japan, India, Germany and Italy seem to have significantly lower percentage of women in managerial positions. This data supports the information from plots 1 and 2 where we saw that Turkey and Italy have the highest difference in both unpaid work and paid work among men and women. Through this we can interpret that the share of females in managerial positions might be lower in countries where women spend more time in unpaid work than men/ where men spend more time in paid work than women. 
+Interpretation for plot 7: From the plot, we can see that the percentage of managerial positions occupied by Women in 2019 is significantly higher in Russia, North and South America, and parts of Europe as compared to Asia. Turkey, Japan, India, Germany and Italy seem to have significantly lower percentage of women in managerial positions. This data supports the information from plots 1 and 2 where we saw that Turkey and Italy have the highest difference in both unpaid work and paid work among men and women. Through this we can interpret that the share of females in managerial positions might be lower in countries where women spend more time in unpaid work than men/ where men spend more time in paid work than women. 
 
-### Plots 6 & 7: Share of females in managerial positions in Asia (Comparison between years 2019 and 2010)
+### Plots 8 & 9: Share of females in managerial positions in Asia (Comparison between years 2019 and 2010)
 
 ```{r}
 #Share of female managers in Asia
@@ -343,7 +401,7 @@ managers_labels_2019<- managers_map_asia %>% filter(Time==2019)%>%
             long = mean(long))
 
 #Creating the plot 
-p6 <- managers_map_asia %>% filter(Time==2019)%>%
+p8 <- managers_map_asia %>% filter(Time==2019)%>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill =Share_of_female_managers_all, group=group), color = "white")+
    scale_fill_gradient("Percentage",limits=c(0,50),low="mistyrose", high="mistyrose4" ) +
@@ -364,7 +422,7 @@ managers_labels_2010<- managers_map_asia %>% filter(Time==2010)%>%
             long = mean(long))
 
 #Creating the plot 
-p7 <- managers_map_asia %>% filter(Time==2010)%>%
+p9 <- managers_map_asia %>% filter(Time==2010)%>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill =Share_of_female_managers_all, group=group), color = "white")+
    scale_fill_gradient("Percentage",limits=c(0,50),  low="mistyrose", high="mistyrose4" ) +
@@ -378,15 +436,15 @@ p7 <- managers_map_asia %>% filter(Time==2010)%>%
     legend.title = element_text(size=9),
     plot.title = element_text(face="bold"))
 
-grid.arrange(p7,p6)
+grid.arrange(p9,p8)
 ```
 
 These plots focus on countries in Asia. Due to sparse data, the plot only includes 4 countries. Russia is included in these plots as it falls partly in the Asian continent.I chose to look at 2019 and 2010 because data for 2020 was not available. This plot does not show missing countries because when I tried scaling the map to only include Asian countries, it didn't end up looking like what I wanted it to look like so decided not to scale. 
 
-Plots 6 and 7 Interpretation: This plot shows us data from years 2019 and 2010. We cannot see a significant change in percentage of managerial positions occupied by women between 2010 and 2019. 
+Interpretation for plots 8 and 9: This plot shows us data from years 2019 and 2010. We cannot see a significant change in percentage of managerial positions occupied by women between 2010 and 2019. 
 
 
-### Plots 8 & 9: Female share of seats on boards of the largest publicly listed companies among countries in Europe (Comparison between years 2020 and 2010) 
+### Plots 10 & 11: Female share of seats on boards of the largest publicly listed companies among countries in Europe (Comparison between years 2020 and 2010) 
 
 ```{r}
 
@@ -414,7 +472,7 @@ board_labels_2010<- board_map %>% filter(Time==2010)%>%
             long = mean(long))
 
 #Creating the plots
-p8 <- board_map %>% filter(Time==2020)%>%
+p10 <- board_map %>% filter(Time==2020)%>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill =Share_of_seats_in_boards_all, group=group), color = "white")+
    scale_fill_gradient2("Percentage of Seats" , limits=c(0,50), low = "#E0F2F1",
@@ -429,7 +487,7 @@ p8 <- board_map %>% filter(Time==2020)%>%
         plot.title = element_text(size = 10, hjust=0.5, face="bold"),
     legend.title = element_text(size=10))
 
-p9 <- board_map %>% filter(Time==2010)%>%
+p11 <- board_map %>% filter(Time==2010)%>%
   ggplot(aes(x = long, y = lat)) +
   geom_polygon(aes(fill =Share_of_seats_in_boards_all, group=group), color = "white")+
    scale_fill_gradient("Percentage of Seats" ,limits=c(0,50), low = "#E0F2F1",
@@ -445,7 +503,7 @@ p9 <- board_map %>% filter(Time==2010)%>%
     legend.title = element_text(size=10))
 
 #Putting the plots in one grid        
-grid.arrange(p9, p8)
+grid.arrange(p11, p10)
 ```
 
-Plots 8 and 9 Interpretation: These plots look at female share of seats on boards of the largest publicly listed companies in Europe between years 2010 and 2020. Overall, it looks like the percentage of seats increased for most of the countries with the exception of Turkey, Greece, Lithuana and Estonia. This data again supports the information from previous plots where we saw that the difference in time spent in paid work between men and women were significantly higher in Turkey (also quite high in Lithuana). Through this we can interpret that the share of females in boards of the largest publicly listed companies among countries might be lower in countries where men spend more time in paid work than women/ where women spend more time in unpaid work than men. 
+Interpretation for plots 10 and 11: These plots look at female share of seats on boards of the largest publicly listed companies in Europe between years 2010 and 2020. Overall, it looks like the percentage of seats increased for most of the countries with the exception of Turkey, Greece, Lithuana and Estonia. This data again supports the information from previous plots where we saw that the difference in time spent in paid work between men and women were significantly higher in Turkey (also quite high in Lithuana). Through this we can interpret that the share of females in boards of the largest publicly listed companies among countries might be lower in countries where men spend more time in paid work than women/ where women spend more time in unpaid work than men. 
