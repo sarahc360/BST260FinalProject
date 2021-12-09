@@ -51,3 +51,32 @@ Indicators of employment from OECD
 - Female share of seats in national parliaments (percentages)
 - Share of employed in involuntary part-time employment (percentages)
 - Share of employed in part-time employment (percentages)
+
+ANU - **Overview and Motivation**: Provide an overview of the project goals and the motivation for it. Consider that this will be read by people who did not see your project proposal. 
+
+ANU - **Related Work**: Anything that inspired you, such as a paper, a web site, or something we discussed in class.
+
+KELLY - **Initial Questions**: What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
+
+SARAH - **Data**: Source, scraping method, cleanup, etc.
+
+Definitions and units for variables in data frame
+
+- unpaid_time: Time spent in unpaid work (minutes per day)
+- paid_time: Time spent in paid work (minutes per day)
+- total_time: Time spent in total work (minutes per day)
+- agriculture_work: Share of employed working in agriculturex (percentages)
+- services_work: Share of employed working in services (percentages)       
+- maternity_leave: Length of maternity leave (weeks)
+- leave_job_protection: Length of parental leave with job protection (weeks)
+- total_paid_leave: Total length of paid maternity and parental leave (weeks)
+- paternal_leave: Length of paid father-specific leave (weeks)
+- share_managers: Share of employed who are managers (percentages)
+- female_share_boards: Female share of seats on boards of the largest publicly listed companies (percentages)
+- share_involuntary_parttime: Share of employed in involuntary part-time employment (percentages)
+- prop_unpaid: Proportion of time in total work spent in unpaid labor (percentages) 
+
+DIPAL - **Exploratory Analysis**: What visualizations did you use to look at your data in different ways? What are the different statistical methods you considered? Justify the decisions you made, and show any major changes to your ideas. How did you reach these conclusions?
+
+JULIA - **Final Analysis**: What did you learn about the data? How did you answer the questions? How can you justify your answers? Note that 1 type of analysis per team member is required. A Shiny app counts as a type of analysis.
+
