@@ -21,6 +21,13 @@ Our motivation for this project was the article (link provided above) published 
 
 ### Initial Questions - Kelly
 
+Our initial question for the project was: How does the amount of time spent in unpaid work differ between men and women, and which employment-related variables are predictors of that disparity? 
+
+Over the course of the project, we also incorporated analyses for the following questions: 
+
+- Are there any global differences in time spent in unpaid labor between men and women?
+- How have employment trends and leadership representation for women changed longitudinally? 
+- What are some key predictors of the length of maternity and parental leave?
 
 ### Data - Sarah
 
