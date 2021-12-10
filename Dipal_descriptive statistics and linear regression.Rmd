@@ -7,110 +7,245 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Loading the data:
+### Loading the data:
 ```{r}
 library(dplyr)
 library(tidyr)
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
 library(tidyverse)
 
 t1 <- read.csv("data1.csv")
 
 # Select specific variables and filter in only OECD countries
-OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdon", "United States")
+OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
 
 t1 <- t1 %>% 
-  select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags) %>%
+  dplyr::select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags) %>%
   filter (Country %in% OECD_label)
 ```
 
 Creating a df with the variables of interest:
-
 ```{r}
 # Isolate variables of interest
 # Removing the age group variable (and filtering for total age group when appropriate)
 # In order to merge into one dataframe, time variable was isolated only to 2018 for most variables as that is the most recent year with the most complete data. 
 
-t1 <- t1 %>%
+DN_t1 <- t1 %>%
   filter(Time %in% c("Latest year", "2018"))
 
 #*** Time for the unpaid, paid and total time is "Latest Year"
-unpaid_time <- t1 %>%
+unpaid_time <- DN_t1 %>%
   filter(Indicator == "Time spent in unpaid work, by sex") %>%
-  select(Country, Sex, Value) %>%      
+  dplyr::select(Country, Sex, Value) %>%      
   rename(unpaid_time = Value)
 
-paid_time <- t1 %>%
+paid_time <- DN_t1 %>%
   filter(Indicator == "Time spent in paid work, by sex") %>%
-  select(Country, Sex, Value) %>%
+  dplyr::select(Country, Sex, Value) %>%
   rename(paid_time = Value)
 
-total_time <- t1 %>%
+total_time <- DN_t1 %>%
   filter(Indicator == "Time spent in total work, by sex") %>%
-  select(Country, Sex, Value) %>%
+  dplyr::select(Country, Sex, Value) %>%
   rename(total_time = Value)
 
-agriculture_work <- t1 %>%
+agriculture_work <- DN_t1 %>%
   filter(Indicator == "Share of employed working in agriculture, by sex") %>%
-  select(Country, Sex, Value) %>%       
+  dplyr::select(Country, Sex, Value) %>%       
   rename(agriculture_work = Value)
 
-industry_work <- t1 %>%
+industry_work <- DN_t1 %>%
   filter(Indicator == "Share of employed working in industry, by sex") %>%
-  select(Country, Sex, Value) %>%     
+  dplyr::select(Country, Sex, Value) %>%     
   rename(industry_work = Value)
 
-services_work <- t1 %>%
+services_work <- DN_t1 %>%
   filter(Indicator == "Share of employed working in services, by sex") %>%
-  select(Country, Sex, Value) %>%
+  dplyr::select(Country, Sex, Value) %>%
   rename(services_work = Value)
 
-maternity_leave <- t1 %>%
+maternity_leave <- DN_t1 %>%
   filter(Indicator == "Length of maternity leave") %>%
-  select(Country, Sex, Value) %>%
+  dplyr::select(Country, Sex, Value) %>%
   rename(maternity_leave = Value)
 
-leave_job_protection <- t1 %>%
+leave_job_protection <- DN_t1 %>%
   filter(Indicator == "Length of parental leave with job protection") %>%
-  select(Country, Sex, Value) %>%
+  dplyr::select(Country, Sex, Value) %>%
   rename(leave_job_protection = Value)
 
-total_paid_leave <- t1 %>%
+total_paid_leave <- DN_t1 %>%
   filter(Indicator == "Total length of paid maternity and parental leave") %>%
-  select(Country, Sex, Value) %>%
+  dplyr::select(Country, Sex, Value) %>%
   rename(total_paid_leave = Value)
 
-paternal_leave <- t1 %>%
+paternal_leave <- DN_t1 %>%
   filter(Indicator == "Length of paid father-specific leave") %>%
-  select(Country, Sex, Value) %>%
+  dplyr::select(Country, Sex, Value) %>%
   rename(paternal_leave = Value)
 
-share_managers <- t1 %>%
+share_managers <- DN_t1 %>%
   filter(Indicator == "Share of employed who are managers, by sex") %>%
-  select(Country, Sex, Value) %>%
+  dplyr::select(Country, Sex, Value) %>%
   rename(share_managers = Value)
 
-female_share_boards <- t1 %>%
+female_share_boards <- DN_t1 %>%
   filter(Indicator == "Female share of seats on boards of the largest publicly listed companies") %>%
-  select(Country, Sex, Value) %>%
+  dplyr::select(Country, Sex, Value) %>%
   rename(female_share_boards = Value)
 
-share_involuntary_parttime <- t1 %>%
+share_involuntary_parttime <- DN_t1 %>%
   filter(Indicator == "Share of employed in involuntary part-time employment, by sex and age group",
          Age.Group=="Total") %>%
-  select(Country, Sex, Value) %>%
+  dplyr::select(Country, Sex, Value) %>%
   rename(share_involunttary_parttime = Value)
 
-share_parttime <- t1 %>%
+share_parttime <- DN_t1 %>%
   filter(Indicator == "Share of employed in part-time employment, by sex and age group",
          Age.Group=="Total") %>%
-  select(Country, Sex, Value) %>%
+  dplyr::select(Country, Sex, Value) %>%
   rename(share_parttime = Value)
 
 # Create new dataframe
 data_list <- list(unpaid_time, paid_time, total_time, agriculture_work, industry_work, services_work, maternity_leave, leave_job_protection, total_paid_leave, paternal_leave, share_managers, female_share_boards, share_involuntary_parttime, share_parttime)
 
 new_data <- data_list %>% 
-  reduce(left_join, by=c("Country", "Sex")) %>%
-  # Create ratio variable for proportion of time spent in unpaid labor
+  reduce(left_join, by=c("Country", "Sex"))
+```
+
+A new ratio variable was created to standardize the proportion of total labor that is unpaid for both men and women:
+```{r}
+new_data <- new_data %>%
   mutate(prop_unpaid = unpaid_time/total_time)
 ```
+
+### Descriptive Statistics of Labor by Sex
+A total of 35 OECD countries, including the United States, were included in the analysis. To gain a better understanding of the distribution of paid and unpaid labor by sex between different countries, we first ran a set of descriptive statistics on some of the key variables.
+
+Average time in unpaid labor by sex (minutes/day)
+```{r}
+new_data %>%
+  group_by(Sex) %>%
+  summarize_at(vars(unpaid_time), list(Average_Time_Unpaid = mean, Standard_Deviation = sd))
+
+# Independent two-sample t-test on these differences
+t.test(new_data$unpaid_time[new_data$Sex=="Women"], new_data$unpaid_time[new_data$Sex=="Men"])
+```
+
+Average time spent in paid labor by sex (minutes/day)
+```{r}
+new_data %>%
+  group_by(Sex) %>%
+  summarize_at(vars(paid_time), list(Average_Time_Paid = mean, Standard_Deviation = sd))
+t.test(new_data$paid_time[new_data$Sex=="Women"], new_data$paid_time[new_data$Sex=="Men"])
+```
+
+Average proportion of time unpaid by sex
+```{r}
+new_data %>%
+  group_by(Sex) %>%
+  summarize_at(vars(prop_unpaid), list(Average_Proportion_Unpaid = mean, Standard_Deviation = sd))
+t.test(new_data$prop_unpaid[new_data$Sex=="Women"], new_data$prop_unpaid[new_data$Sex=="Men"])
+```
+
+As the above statistics demonstrate, in the OECD countries, women work unpaid on average 263 minutes/day while men work unpaid for 136 minutes/day. This difference is statistically significant. Men work more minutes on average for paid labor than women (318 versus 218 minutes/day), a result that is also statistically significant. Finally the proportion of unpaid labor to total labor variable demonstrates that women spend a significantly larger proportion of their total labor in unpaid labor compared to men (0.55 versus 0.30).
+
+### Graphical Visualizations of Time Differences in Unpaid Labor by Country
+
+The OECD countries vary in their labor differences by sex. To graphically visualize this phenomenon, the proportion of time unspent per country was graphed using a bar chart.
+
+```{r}
+new_data %>%
+  ggplot(aes(x=reorder(Country, -prop_unpaid), y=prop_unpaid, fill=Sex)) + 
+  geom_bar(stat="identity") + 
+  scale_fill_brewer(palette="Paired") +
+  coord_flip() + 
+  labs(x="Country", y="Proportion of Time Spent in Unpaid Labor to Total Labor", title="Proportion of Time Spent in Unpaid Labor by Country")
+```
+
+To understand how the share of labor, and other variables related to labor force participation varies between continents, 1-2 countries per continent were selected and compared against each other.
+
+```{r,fig.height=7, fig.width=7}
+total_paid <- new_data %>%
+  filter(Country %in% c("Canada", "United States", "United Kingdom", "Japan", "Australia", "France")) %>%
+  ggplot(aes(x=Country, y=total_paid_leave, fill=Country)) +
+  scale_fill_brewer(palette="GnBu") +
+  geom_bar(stat="identity", color="Black") +
+  theme(legend.position = "none", axis.text=element_text(angle=45, hjust=1), plot.title=element_text(size=12)) + 
+  labs(x="Country", y="Total paid parental leave (weeks)", title="Total paid parental leave (weeks)")
+
+female_share_boards <- new_data %>%
+  filter(Country %in% c("Canada", "United States", "United Kingdom", "Japan", "Australia", "France")) %>%
+  ggplot(aes(x=Country, y=female_share_boards, fill=Country)) +
+  scale_fill_brewer(palette="GnBu") +
+  geom_bar(stat="identity", color="Black", position=position_dodge()) +
+  theme(legend.position="none", axis.text=element_text(angle=45, hjust=1), plot.title=element_text(size=12)) + 
+  labs(x="Country", y="Female share of board seats", title="Female share of board seats")
+
+share_involuntary <- new_data %>%
+  filter(Country %in% c("Canada", "United States", "United Kingdom", "Japan", "Australia", "France")) %>%
+  ggplot(aes(x=Country, y=share_involunttary_parttime, fill=Sex)) +
+  scale_fill_brewer(palette="GnBu") +
+  geom_bar(stat="identity", color="Black", position=position_dodge()) +
+  theme(legend.position = "none", axis.text=element_text(angle=45, hjust=1), plot.title=element_text(size=12)) + 
+  labs(x="Country", y="Share involuntary part-time employment", title="Share involuntary part-time employment")
+
+share_managers <- new_data %>%
+  filter(Country %in% c("Canada", "United States", "United Kingdom", "Japan", "Australia", "France")) %>%
+  ggplot(aes(x=Country, y=share_managers, fill=Sex)) +
+  scale_fill_brewer(palette="GnBu") +
+  geom_bar(stat="identity", color="Black", position=position_dodge()) +
+  theme(axis.text=element_text(angle=45, hjust=1), plot.title=element_text(size=12)) + 
+  labs(x="Country", y="Share of employed who are managers", title="Share of employed who are managers")
+
+ggarrange(total_paid, female_share_boards, share_involuntary, share_managers, ncol=2, nrow=2)
+```
+
+### Scatter plots to assess linear correlation
+To prepare for running a linear regression model to predict the proportion of unpaid labor, scatterplots were created to visualize the relationship between various continuous covariates. As visualized by this data, many of the covariates do not have a linear relationship with the outcome of proportion unpaid labor, thereby limiting the use of regression mode.
+
+```{r, fig.height=7, fig.width=7}
+maternity <- new_data %>%
+  filter(Sex=="Women") %>%
+  ggplot(aes(x=prop_unpaid, y=maternity_leave)) +
+  geom_point(color="Blue") +
+  labs(x="Proportion unpaid labor", y="Length of maternity Leave (weeks)", title="Maternity leave vs. Proportion unpaid") +
+  theme(plot.title=element_text(size=10))
+
+share_involuntary <- new_data %>%
+  ggplot(aes(x=prop_unpaid, y=share_involunttary_parttime)) +
+  geom_point(color="Sky Blue") +
+  labs(x="Proportion unpaid labor", y="Share in involuntary part-time employment", title="Involuntary part-time employment vs. Proportion unpaid") +
+  theme(plot.title=element_text(size=10))
+
+share_managers <- new_data %>%
+  ggplot(aes(x=prop_unpaid, y=share_managers)) +
+  geom_point(color="royalblue1") +
+  labs(x="Proportion unpaid labor", y="Share employed who are managers ", title="Share managers vs. Proportion unpaid")+
+  theme(plot.title=element_text(size=10))
+
+female_boards <- new_data %>%
+  filter(Sex=="Women") %>%
+  ggplot(aes(x=prop_unpaid, y=female_share_boards)) +
+  geom_point(color="Slateblue1") +
+  labs(x="Proportion unpaid labor", y="Female share of boards in large companies", title="Female share of boards vs. Proportion unpaid ")+
+  theme(plot.title=element_text(size=10))
+
+ggarrange(maternity, female_boards, share_involuntary, share_managers, nrow=2, ncol=2)
+```
+
+These plots demonstrate that most covariates have a very weak linear relationship with the proportion of unpaid labor. Share of involuntary part-time employment visually appears to have the strongest linear relationship with proportion of unpaid labor.
+
+### Linear Regression
+We combined these various covariates into a linear regression model using our dataset to determine if any were significantly correlated to our outcome of interest (proportion of unpaid labor of total labor in women). Below are the results of our regression model:
+
+```{r}
+model.1 <- lm(prop_unpaid ~ share_managers + female_share_boards + share_involunttary_parttime + total_time + maternity_leave + total_paid_leave + share_parttime,
+              data=subset(new_data, Sex=="Women"))
+
+broom::tidy(model.1)
+```
+
+The results of our linear regression model show, as expected, that many of our included covariates are not significant predictors of the outcome of proportion unpaid labor amongst women. We hypothesize that several important predictors (such as education, poverty, GDP, important industries) have not been included in this regression model.
