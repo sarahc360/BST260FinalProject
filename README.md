@@ -1,12 +1,22 @@
 # BST260FinalProject
 
-Template: 
+**Project Title**: Off The Clock: Gender Inequity In and Out of the Workforce
+**Data Source**: OECD data
+**Group Members**: Sarah Christensen, Kelly Fung, Dipal Nagda, Anu Neupane, & Julia Olsen
 
-- Overview of the project and data source
-- Group member names
-- How to navigate repository (what are the files, in what order to view) 
-- Link to website
-- Link to screencast
+### How to Navigate Repository
+Our repository contains our data file and several RMD files containing our analyses.  
+**Data file**: data1.csv  
+**Recommended order of file viewing**:  
+      1. 1_Descriptive Stats and Linear Regression_Dipal Nagda  
+      2. 2_Maps_Anu Neupane  
+      3. 3_MachineLearning2_Kelly Fung  
+      4. 4_MachineLearning_Sarah Christensen
+      5. 5_Shiny App_Julia Olsen  
+
+### Website & Screencast Links:
+- Website:
+- Screencast:
 
 ### Overview and Motivation - Anu
 Gender inequality, a widely prevalent social phenomenon, has risen to the forefront of global discussion after the COVID- 19 pandemic. An article published by UN women (https://data.unwomen.org/sites/default/files/inline-files/Whose-time-to-care-brief_0.pdf) states that while women already spent about three times as many hours in unpaid domestic work than men, the pandemic has exacerbated this gap. During the pandemic, women spent more hours in care and domestic work. Women were also more likely than men to leave the workforce , potentially as a consequence of increased workloads. 
