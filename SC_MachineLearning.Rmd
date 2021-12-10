@@ -3,11 +3,11 @@ title: "Predicting Parental Leave"
 output: html_document
 ---
 
-In this section we will using machine learning to create models that can predict the total length of paid maternity and parental leave given year, country, and other measures related to women in the workforce and in policy making positions. We will use utilize several machine learning techniques to try and find the best fitting model.  
+In this section we will using machine learning to create models that can predict the total length of paid maternity and parental leave given year, country, and other measures related to women in the workforce and in policy making positions. We will use utilize several machine learning techniques to try and find the best fitting model. 
 
 We will start by reading in the required data. 
 
-```{r}
+```{r, results = FALSE}
 library(dplyr)
 
 # set working directory to where you stored the .csv file
@@ -39,9 +39,9 @@ ALLCOUNTRY <- ALLCOUNTRY %>%
   dplyr::select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)
 ```
 
-Now we will filer the data to only include OECD countries:
+Now we will filter the data to only include OECD countries:
 
-```{r}
+```{r, results = FALSE}
 OECD_label <- c("Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Korea", "Latvia", "Lithuania", "Luxembourg", "Mexico", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States")
 
 t1 <- ALLCOUNTRY %>%

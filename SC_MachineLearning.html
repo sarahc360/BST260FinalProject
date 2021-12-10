@@ -185,115 +185,28 @@ setwd(&quot;/Users/sarahchristensen/Documents/Harvard/Fall2021/BST260/BST260Fina
 ALLCOUNTRY &lt;- read.csv(&quot;data1.csv&quot;)
 
 # Determine which duplicates will be the best to keep 
-unique(ALLCOUNTRY$COU)</code></pre>
-<pre><code>##  [1] &quot;AUS&quot;  &quot;AUT&quot;  &quot;BEL&quot;  &quot;CAN&quot;  &quot;CZE&quot;  &quot;DNK&quot;  &quot;FIN&quot;  &quot;FRA&quot;  &quot;DEU&quot;  &quot;GRC&quot; 
-## [11] &quot;HUN&quot;  &quot;ISL&quot;  &quot;IRL&quot;  &quot;ITA&quot;  &quot;JPN&quot;  &quot;KOR&quot;  &quot;LUX&quot;  &quot;MEX&quot;  &quot;NLD&quot;  &quot;NZL&quot; 
-## [21] &quot;NOR&quot;  &quot;POL&quot;  &quot;PRT&quot;  &quot;SVK&quot;  &quot;ESP&quot;  &quot;SWE&quot;  &quot;CHE&quot;  &quot;TUR&quot;  &quot;GBR&quot;  &quot;USA&quot; 
-## [31] &quot;BRA&quot;  &quot;CHL&quot;  &quot;CHN&quot;  &quot;EST&quot;  &quot;IND&quot;  &quot;IDN&quot;  &quot;ISR&quot;  &quot;RUS&quot;  &quot;SVN&quot;  &quot;ZAF&quot; 
-## [41] &quot;OAVG&quot; &quot;COL&quot;  &quot;LTU&quot;  &quot;CRI&quot;  &quot;LVA&quot;  &quot;BGR&quot;  &quot;HRV&quot;  &quot;CYP&quot;  &quot;MKD&quot;  &quot;MLT&quot; 
-## [51] &quot;ROU&quot;  &quot;OECD&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$Country) #keep</code></pre>
-<pre><code>##  [1] &quot;Australia&quot;                    &quot;Austria&quot;                     
-##  [3] &quot;Belgium&quot;                      &quot;Canada&quot;                      
-##  [5] &quot;Czech Republic&quot;               &quot;Denmark&quot;                     
-##  [7] &quot;Finland&quot;                      &quot;France&quot;                      
-##  [9] &quot;Germany&quot;                      &quot;Greece&quot;                      
-## [11] &quot;Hungary&quot;                      &quot;Iceland&quot;                     
-## [13] &quot;Ireland&quot;                      &quot;Italy&quot;                       
-## [15] &quot;Japan&quot;                        &quot;Korea&quot;                       
-## [17] &quot;Luxembourg&quot;                   &quot;Mexico&quot;                      
-## [19] &quot;Netherlands&quot;                  &quot;New Zealand&quot;                 
-## [21] &quot;Norway&quot;                       &quot;Poland&quot;                      
-## [23] &quot;Portugal&quot;                     &quot;Slovak Republic&quot;             
-## [25] &quot;Spain&quot;                        &quot;Sweden&quot;                      
-## [27] &quot;Switzerland&quot;                  &quot;Turkey&quot;                      
-## [29] &quot;United Kingdom&quot;               &quot;United States&quot;               
-## [31] &quot;Brazil&quot;                       &quot;Chile&quot;                       
-## [33] &quot;China (People&#39;s Republic of)&quot; &quot;Estonia&quot;                     
-## [35] &quot;India&quot;                        &quot;Indonesia&quot;                   
-## [37] &quot;Israel&quot;                       &quot;Russia&quot;                      
-## [39] &quot;Slovenia&quot;                     &quot;South Africa&quot;                
-## [41] &quot;OECD - Average&quot;               &quot;Colombia&quot;                    
-## [43] &quot;Lithuania&quot;                    &quot;Costa Rica&quot;                  
-## [45] &quot;Latvia&quot;                       &quot;Bulgaria&quot;                    
-## [47] &quot;Croatia&quot;                      &quot;Cyprus&quot;                      
-## [49] &quot;North Macedonia&quot;              &quot;Malta&quot;                       
-## [51] &quot;Romania&quot;                      &quot;OECD - Total&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$IND) #keep</code></pre>
-<pre><code>##  [1] &quot;EMP1&quot;       &quot;EMP6&quot;       &quot;EMP5&quot;       &quot;EMP13_A&quot;    &quot;EMP13_I&quot;   
-##  [6] &quot;EMP13_S&quot;    &quot;EMP17&quot;      &quot;EMP18_MAT&quot;  &quot;EMP18_PAR&quot;  &quot;EMP18_PAID&quot;
-## [11] &quot;EMP18_PAT&quot;  &quot;EMP10&quot;      &quot;EMP11&quot;      &quot;EMP15_U&quot;    &quot;EMP15_P&quot;   
-## [16] &quot;EMP15_T&quot;    &quot;EMP10NEW&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$Indicator) #keep</code></pre>
-<pre><code>##  [1] &quot;Labour force participation rate, by sex and age group &quot;                     
-##  [2] &quot;Share of employed in involuntary part-time employment, by sex and age group&quot;
-##  [3] &quot;Share of employed in part-time employment, by sex and age group&quot;            
-##  [4] &quot;Share of employed working in agriculture, by sex&quot;                           
-##  [5] &quot;Share of employed working in industry, by sex&quot;                              
-##  [6] &quot;Share of employed working in services, by sex&quot;                              
-##  [7] &quot;Female share of seats in national parliaments&quot;                              
-##  [8] &quot;Length of maternity leave&quot;                                                  
-##  [9] &quot;Length of parental leave with job protection&quot;                               
-## [10] &quot;Total length of paid maternity and parental leave&quot;                          
-## [11] &quot;Length of paid father-specific leave&quot;                                       
-## [12] &quot;Share of employed who are managers, by sex&quot;                                 
-## [13] &quot;Female share of seats on boards of the largest publicly listed companies&quot;   
-## [14] &quot;Time spent in unpaid work, by sex&quot;                                          
-## [15] &quot;Time spent in paid work, by sex&quot;                                            
-## [16] &quot;Time spent in total work, by sex&quot;                                           
-## [17] &quot;Share of female managers&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$SEX) </code></pre>
-<pre><code>## [1] &quot;MEN&quot;   &quot;WOMEN&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$Sex) #keep</code></pre>
-<pre><code>## [1] &quot;Men&quot;   &quot;Women&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$AGE)</code></pre>
-<pre><code>## [1] &quot;15PLUS&quot; &quot;55PLUS&quot; &quot;TOTAL&quot;  &quot;1524&quot;   &quot;1564&quot;   &quot;2554&quot;   &quot;5564&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$Age.Group) #keep</code></pre>
-<pre><code>## [1] &quot;15+&quot;   &quot;55+&quot;   &quot;Total&quot; &quot;15-24&quot; &quot;15-64&quot; &quot;25-54&quot; &quot;55-64&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$TIME)</code></pre>
-<pre><code>##  [1] &quot;1990&quot;        &quot;1991&quot;        &quot;1992&quot;        &quot;1993&quot;        &quot;1994&quot;       
-##  [6] &quot;1995&quot;        &quot;1996&quot;        &quot;1997&quot;        &quot;1998&quot;        &quot;1999&quot;       
-## [11] &quot;2000&quot;        &quot;2001&quot;        &quot;2002&quot;        &quot;2003&quot;        &quot;2004&quot;       
-## [16] &quot;2005&quot;        &quot;2006&quot;        &quot;2007&quot;        &quot;2008&quot;        &quot;2009&quot;       
-## [21] &quot;2010&quot;        &quot;2011&quot;        &quot;2012&quot;        &quot;2013&quot;        &quot;1970&quot;       
-## [26] &quot;1971&quot;        &quot;1972&quot;        &quot;1973&quot;        &quot;1974&quot;        &quot;1975&quot;       
-## [31] &quot;1976&quot;        &quot;1977&quot;        &quot;1978&quot;        &quot;1979&quot;        &quot;1980&quot;       
-## [36] &quot;1981&quot;        &quot;1982&quot;        &quot;1983&quot;        &quot;1984&quot;        &quot;1985&quot;       
-## [41] &quot;1986&quot;        &quot;1987&quot;        &quot;1988&quot;        &quot;1989&quot;        &quot;2014&quot;       
-## [46] &quot;2015&quot;        &quot;2016&quot;        &quot;2017&quot;        &quot;LATEST_YEAR&quot; &quot;2018&quot;       
-## [51] &quot;2019&quot;        &quot;2020&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$Time) #keep</code></pre>
-<pre><code>##  [1] &quot;1990&quot;        &quot;1991&quot;        &quot;1992&quot;        &quot;1993&quot;        &quot;1994&quot;       
-##  [6] &quot;1995&quot;        &quot;1996&quot;        &quot;1997&quot;        &quot;1998&quot;        &quot;1999&quot;       
-## [11] &quot;2000&quot;        &quot;2001&quot;        &quot;2002&quot;        &quot;2003&quot;        &quot;2004&quot;       
-## [16] &quot;2005&quot;        &quot;2006&quot;        &quot;2007&quot;        &quot;2008&quot;        &quot;2009&quot;       
-## [21] &quot;2010&quot;        &quot;2011&quot;        &quot;2012&quot;        &quot;2013&quot;        &quot;1970&quot;       
-## [26] &quot;1971&quot;        &quot;1972&quot;        &quot;1973&quot;        &quot;1974&quot;        &quot;1975&quot;       
-## [31] &quot;1976&quot;        &quot;1977&quot;        &quot;1978&quot;        &quot;1979&quot;        &quot;1980&quot;       
-## [36] &quot;1981&quot;        &quot;1982&quot;        &quot;1983&quot;        &quot;1984&quot;        &quot;1985&quot;       
-## [41] &quot;1986&quot;        &quot;1987&quot;        &quot;1988&quot;        &quot;1989&quot;        &quot;2014&quot;       
-## [46] &quot;2015&quot;        &quot;2016&quot;        &quot;2017&quot;        &quot;Latest year&quot; &quot;2018&quot;       
-## [51] &quot;2019&quot;        &quot;2020&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$Unit.Code)</code></pre>
-<pre><code>## [1] &quot;PC&quot;   &quot;&quot;     &quot;WEEK&quot; &quot;MPD&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$Unit) #keep</code></pre>
-<pre><code>## [1] &quot;Percentage&quot;      &quot;&quot;                &quot;Weeks&quot;           &quot;Minutes per day&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$PowerCode.Code)</code></pre>
-<pre><code>## [1] 0</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$PowerCode)</code></pre>
-<pre><code>## [1] &quot;Units&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$Reference.Period.Code)</code></pre>
-<pre><code>## [1] NA</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$Reference.Period)</code></pre>
-<pre><code>## [1] NA</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$Flag.Codes)</code></pre>
-<pre><code>## [1] &quot;&quot;     &quot;E&quot;    &quot;B&quot;    &quot;E; B&quot;</code></pre>
-<pre class="r"><code>unique(ALLCOUNTRY$Flags) #keep</code></pre>
-<pre><code>## [1] &quot;&quot;                       &quot;Estimated value&quot;        &quot;Break&quot;                 
-## [4] &quot;Estimated value; Break&quot;</code></pre>
-<pre class="r"><code>ALLCOUNTRY &lt;- ALLCOUNTRY %&gt;% 
+unique(ALLCOUNTRY$COU)
+unique(ALLCOUNTRY$Country) #keep
+unique(ALLCOUNTRY$IND) #keep
+unique(ALLCOUNTRY$Indicator) #keep
+unique(ALLCOUNTRY$SEX) 
+unique(ALLCOUNTRY$Sex) #keep
+unique(ALLCOUNTRY$AGE)
+unique(ALLCOUNTRY$Age.Group) #keep
+unique(ALLCOUNTRY$TIME)
+unique(ALLCOUNTRY$Time) #keep
+unique(ALLCOUNTRY$Unit.Code)
+unique(ALLCOUNTRY$Unit) #keep
+unique(ALLCOUNTRY$PowerCode.Code)
+unique(ALLCOUNTRY$PowerCode)
+unique(ALLCOUNTRY$Reference.Period.Code)
+unique(ALLCOUNTRY$Reference.Period)
+unique(ALLCOUNTRY$Flag.Codes)
+unique(ALLCOUNTRY$Flags) #keep
+
+ALLCOUNTRY &lt;- ALLCOUNTRY %&gt;% 
   dplyr::select(Country, IND, Indicator, Sex, Age.Group, Time, Value, Unit, Flags)</code></pre>
-<p>Now we will filer the data to only include OECD countries:</p>
+<p>Now we will filter the data to only include OECD countries:</p>
 <pre class="r"><code>OECD_label &lt;- c(&quot;Australia&quot;, &quot;Austria&quot;, &quot;Belgium&quot;, &quot;Canada&quot;, &quot;Chile&quot;, &quot;Colombia&quot;, &quot;Costa Rica&quot;, &quot;Czech Republic&quot;, &quot;Denmark&quot;, &quot;Estonia&quot;, &quot;Finland&quot;, &quot;France&quot;, &quot;Germany&quot;, &quot;Greece&quot;, &quot;Hungary&quot;, &quot;Iceland&quot;, &quot;Ireland&quot;, &quot;Israel&quot;, &quot;Italy&quot;, &quot;Japan&quot;, &quot;Korea&quot;, &quot;Latvia&quot;, &quot;Lithuania&quot;, &quot;Luxembourg&quot;, &quot;Mexico&quot;, &quot;Netherlands&quot;, &quot;New Zealand&quot;, &quot;Norway&quot;, &quot;Poland&quot;, &quot;Portugal&quot;, &quot;Slovak Republic&quot;, &quot;Slovenia&quot;, &quot;Spain&quot;, &quot;Sweden&quot;, &quot;Switzerland&quot;, &quot;Turkey&quot;, &quot;United Kingdom&quot;, &quot;United States&quot;)
 
 t1 &lt;- ALLCOUNTRY %&gt;%
