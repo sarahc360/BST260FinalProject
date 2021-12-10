@@ -42,11 +42,15 @@ Definitions and units for variables in data frame:
 - share_involuntary_parttime: Share of employed in involuntary part-time employment (percentages)
 - prop_unpaid: Proportion of time in total work spent in unpaid labor (percentages) 
 
-
-
 ### Exploratory Analysis - Dipal
 
+We first used a variety of descriptive statistics to explore the data and understand the underlying trends in unpaid, paid, and total labor between the OECD countries. A total of 35 OECD countries are represented in the analysis. To standardize and compare the time spent in unpaid labor between all countries, we created a ratio variable of unpaid time over total labor time. The shares of paid and unpaid time were compared using independent two-sample t-tests, demonstrating statistically significant differences in unpaid time between men and women. 
+
+We next created a series of bar charts to visualize the differences between countries and gender, with respect to labor time and other economic and political variables. These covariates, such as maternity leave and share of involuntary labor time, demonstrated great variability between the OECD countries. Finally, to prepare for the linear regression, a series of scatter plots were created to assess for linearity between proportion of time in unpaid labor and the included covariates. Our initial hypothesis was that increased political and economic representation of women would correlate to lower proportion of unpaid labor. Given our small sample size and lack of important other covariates in our dataset, we did not see a linear trend in these scatter plots.
 
 ### Final Analysis - Julia
+
+Linear regression: We combined several of the covariates into a model to assess their correlation with the proportion of unpaid time amongst women in OECD countries. Though none of these covariates emerged as statistically significant predictors, we evaluated the direction of the coefficients as suggestive of potential trends in the data. A significant limitation of our linear regression model is the omission of significant predictors (such as income, educational status and age) from our dataset.
+
 Final analysis for Maps: The maps allow us to hypothesize that in countries where women spend more time in unpaid work, men usually spend more time in paid work. Women may also have less representation in leadership positions in countries where they spend more time in unpaid work compared to men and/ or countries where men spend more time in paid work compared to women. 
 
