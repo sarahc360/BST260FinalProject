@@ -24,43 +24,9 @@ Our motivation for this project was the article (link provided above) published 
 
 ### Data - Sarah
 
+We used publicly available data from the Organization for Economic Co-operation and Development (OECD)  (https://stats.oecd.org/index.aspx?queryid=54757) in our analyses. These data include country-level measurements collected annually (and, in some cases, quarterly) on a number of variables ranging from “time spent in unpaid work” to “female share of seats on boards of the largest publicly listed companies”. (An exhaustive list of variables used can be found below). Queries for variables of interest were selected for on the OECD website in addition to variable measurements for time (1970-present, including some years divided out quarterly), sex (male, female), and age (categories: total, 15+, 55+, 15-24, 15-64, 25-64, and 55-64). The final query was downloaded as comma separated value files (.csv files) and read into R Studio resulting in a single, long-format dataframe. Duplicate variables were dropped, and an OECD country label was added as a separate variable to the dataframe. This allowed us to analyse results only within OECD countries and to compare OECD countries against non-OECD countries. By design, further analysis on this dataframe required individuals to filter by variables of interest and convert data to wide format prior to running analyses. 
 
-### Exploratory Analysis - Dipal
-
-
-### Final Analysis - Julia
-Final analysis for Maps: The maps allow us to hypothesize that in countries where women spend more time in unpaid work, men usually spend more time in paid work. Women may also have less representation in leadership positions in countries where they spend more time in unpaid work compared to men and/ or countries where men spend more time in paid work compared to women. 
-
-
-Indicators of employment from OECD 
-
-- Labour force participation rate, by sex and age group (percentages)
-- Time spent in unpaid work, by sex (minutes per day)
-- Time spent in paid work, by sex (minutes per day)
-- Time spent in total work, by sex (minutes per day)
-- Share of employed working in agriculture,by sex (percentages)
-- Share of employed working in services, by sex (percentages)       
-- Share of employed working in industry, by sex (percentages)       
-- Length of maternity leave (weeks)
-- Length of parental leave with job protection (weeks)
-- Total length of paid maternity and parental leave (weeks)
-- Length of paid father-specific leave (weeks)
-- Share of employed who are managers, by sex and age group (percentages)
-- Share of female managers (percentages)
-- Female share of seats on boards of the largest publicly listed companies (percentages)
-- Female share of seats in national parliaments (percentages)
-- Share of employed in involuntary part-time employment (percentages)
-- Share of employed in part-time employment (percentages)
-
-ANU - **Overview and Motivation**: Provide an overview of the project goals and the motivation for it. Consider that this will be read by people who did not see your project proposal. 
-
-ANU - **Related Work**: Anything that inspired you, such as a paper, a web site, or something we discussed in class.
-
-KELLY - **Initial Questions**: What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
-
-SARAH - **Data**: Source, scraping method, cleanup, etc.
-
-Definitions and units for variables in data frame
+Definitions and units for variables in data frame:
 
 - unpaid_time: Time spent in unpaid work (minutes per day)
 - paid_time: Time spent in paid work (minutes per day)
@@ -76,7 +42,11 @@ Definitions and units for variables in data frame
 - share_involuntary_parttime: Share of employed in involuntary part-time employment (percentages)
 - prop_unpaid: Proportion of time in total work spent in unpaid labor (percentages) 
 
-DIPAL - **Exploratory Analysis**: What visualizations did you use to look at your data in different ways? What are the different statistical methods you considered? Justify the decisions you made, and show any major changes to your ideas. How did you reach these conclusions?
 
-JULIA - **Final Analysis**: What did you learn about the data? How did you answer the questions? How can you justify your answers? Note that 1 type of analysis per team member is required. A Shiny app counts as a type of analysis.
+
+### Exploratory Analysis - Dipal
+
+
+### Final Analysis - Julia
+Final analysis for Maps: The maps allow us to hypothesize that in countries where women spend more time in unpaid work, men usually spend more time in paid work. Women may also have less representation in leadership positions in countries where they spend more time in unpaid work compared to men and/ or countries where men spend more time in paid work compared to women. 
 
