@@ -1,13 +1,17 @@
 # BST260FinalProject
 
 **Project Title**: Off The Clock: Gender Inequity In and Out of the Workforce
+
 **Data Source**: OECD data
+
 **Group Members**: Sarah Christensen, Kelly Fung, Dipal Nagda, Anu Neupane, & Julia Olsen
 
 ### How to Navigate Repository
 
 Our repository contains our data file and several RMD files containing our analyses.  
+
 **Data file**: data1.csv  
+
 **Recommended order of file viewing**:  
       1. 1_Descriptive Stats and Linear Regression_Dipal Nagda  
       2. 2_Maps_Anu Neupane  
