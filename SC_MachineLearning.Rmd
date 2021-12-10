@@ -10,9 +10,6 @@ We will start by reading in the required data.
 ```{r, results = FALSE}
 library(dplyr)
 
-# set working directory to where you stored the .csv file
-setwd("/Users/sarahchristensen/Documents/Harvard/Fall2021/BST260/BST260FinalProject") 
-
 ALLCOUNTRY <- read.csv("data1.csv")
 
 # Determine which duplicates will be the best to keep 
