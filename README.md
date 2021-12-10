@@ -9,9 +9,9 @@ Our repository contains our data file and several RMD files containing our analy
 **Data file**: data1.csv  
 **Recommended order of file viewing**:  
       1. 1_Descriptive Stats and Linear Regression_Dipal Nagda  
-      2. Maps  
-      3. Maching Learning_v1  
-      4. SC_MachineLearning  
+      2. 2_Maps_Anu Neupane  
+      3. 3_MachineLearning2_Kelly Fung  
+      4. 4_MachineLearning_Sarah Christensen
       5. 5_Shiny App_Julia Olsen  
 
 ### Website & Screencast Links:
