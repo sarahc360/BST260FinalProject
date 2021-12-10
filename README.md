@@ -13,7 +13,7 @@ Our repository contains our data file and several RMD files containing our analy
 **Data file**: data1.csv  
 
 **Recommended order of file viewing**:  
-      1. 1_Descriptive Stats and Linear Regression_Dipal Nagda  
+      1. 1_Descriptive Stats and Regression_Dipal Nagda  
       2. 2_Maps_Anu Neupane  
       3. 3_MachineLearning2_Kelly Fung  
       4. 4_MachineLearning_Sarah Christensen
@@ -85,7 +85,7 @@ We next created a series of bar charts to visualize the differences between coun
 
 Through our analyses, we were able to explore a lot of different variables and associations to answer our initial questions about potential gender inequity both in terms of paid and unpaid labor on a global scale.
 
-After conducting exploratory analyses, we conducted a linear regression analysis, combining several of the covariates into a model to assess their correlation with the proportion of unpaid time amongst women in OECD countries. Though none of these covariates emerged as statistically significant predictors, we evaluated the direction of the coefficients as suggestive of potential trends in the data. A significant limitation of our linear regression model is the omission of significant predictors (such as income, educational status and age) from our dataset.
+After conducting exploratory analyses, we conducted a linear regression analysis, combining several of the covariates into a model to assess their correlation with the proportion of unpaid time amongst women in OECD countries. Though none of these covariates emerged as statistically significant predictors, we evaluated the direction of the coefficients as suggestive of potential trends in the data. A significant limitation of our linear regression model was the omission of significant predictors (such as income, educational status and age) from our dataset.
 
 We also developed several map visualizations to visually elucidate any country or regional trends. The map analyses demonstrated that in countries where women spend more time in unpaid work, men usually spend more time in paid work. Women may also have less representation in leadership positions in countries where they spend more time in unpaid work compared to men and / or countries where men spend more time in paid work compared to women. 
 
