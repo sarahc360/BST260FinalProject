@@ -253,7 +253,8 @@ output$Scatterplot3 <- renderPlot({
       ggtitle(paste("Female Labor Force Participation Rate vs. Share of \n Employed Who are Managers in", input$year3)) +
       theme(plot.title = element_text(size = 15, face = "bold"))
   })
-}
+},
+ options = list(height = 1000)
 )
 ```
 
