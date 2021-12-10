@@ -162,7 +162,7 @@ new_data %>%
   geom_bar(stat="identity") + 
   scale_fill_brewer(palette="Paired") +
   coord_flip() + 
-  labs(x="Country", y="Percent of Time Spent in Unpaid Labor to Total Labor", title="Proportion of Time Spent in Unpaid Labor by Country")
+  labs(x="Country", y="Percent of Time Spent in Unpaid Labor to Total Labor", title="Percent of Time Spent in Unpaid Labor by Country")
 ```
 
 The OECD countries vary greatly with respect to the percent of time that men and women spend in unpaid labor. It is clear, however, that across all OECD countries, women spend more time than men in unpaid labor. To understand how the share of labor, and other variables related to labor force participation varies between continents, 1-2 countries per continent were selected and compared against each other.
