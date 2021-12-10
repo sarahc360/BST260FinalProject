@@ -194,7 +194,7 @@ From the boxplots, we see a clear difference in the distribution of percentage o
 
 We then used the `tree` function to fit our regression tree for the outcome on the predictors of interest (region, sex, labor force participation, share of part-time work).
 
-```{r}
+```{r, fig.width=9, fig.height=5}
 ## Regression tree for percentage of unpaid work
 
 ## Fit regression tree with predictor variables
@@ -249,7 +249,9 @@ The regression tree helped identify variables and thresholds that create meaning
 set.seed(1)
 cv_data <- cv.tree(fit_tree1)
 plot(cv_data$size, cv_data$dev, type = "b", xlab="Node Size", ylab="Deviance", main="Tree Depth Analysis")
+```
 
+```{r,  fig.width=9, fig.height=5}
 ## Prune tree with the number of nodes yielding lowest variance
 fit_tree1_prune <- prune.tree(fit_tree1, best=2)
 summary(fit_tree1_prune)
