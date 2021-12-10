@@ -2,6 +2,7 @@
 title: "Read In Data"
 output: html_document
 ---
+Run this file to read in the data. 
 
 ```{r}
 library(dplyr)
