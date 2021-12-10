@@ -3,7 +3,7 @@ title: "Predicting Parental Leave"
 output: html_document
 ---
 
-In this section we will using machine learning to create models that can predict the total length of paid maternity and parental leave given year, country, and other measures related to women in the workforce and in policy making positions. We will use utilize several machine learning techniques to try and find the best fitting model. 
+In this section we will using machine learning to create models that can predict the total length of paid maternity and parental leave given year, country, and other measures related to women in the workforce and in policy making positions. We will use utilize several machine learning techniques to try and find the best fitting model.  
 
 We will start by reading in the required data. 
 
