@@ -199,6 +199,13 @@ pre code {
 </div>
 <div id="initial-questions---kelly" class="section level3">
 <h3>Initial Questions - Kelly</h3>
+<p>Our initial question for the project was: How does the amount of time spent in unpaid work differ between men and women, and which employment-related variables are predictors of that disparity?</p>
+<p>Over the course of the project, we also incorporated analyses for the following questions:</p>
+<ul>
+<li>Are there any global differences in time spent in unpaid labor between men and women?</li>
+<li>How have employment trends and leadership representation for women changed longitudinally?</li>
+<li>What are some key predictors of the length of maternity and parental leave?</li>
+</ul>
 </div>
 <div id="data---sarah" class="section level3">
 <h3>Data - Sarah</h3>
@@ -228,8 +235,12 @@ pre code {
 </div>
 <div id="final-analysis---julia" class="section level3">
 <h3>Final Analysis - Julia</h3>
-<p>Linear regression: We combined several of the covariates into a model to assess their correlation with the proportion of unpaid time amongst women in OECD countries. Though none of these covariates emerged as statistically significant predictors, we evaluated the direction of the coefficients as suggestive of potential trends in the data. A significant limitation of our linear regression model is the omission of significant predictors (such as income, educational status and age) from our dataset.</p>
-<p>Final analysis for Maps: The maps allow us to hypothesize that in countries where women spend more time in unpaid work, men usually spend more time in paid work. Women may also have less representation in leadership positions in countries where they spend more time in unpaid work compared to men and/ or countries where men spend more time in paid work compared to women.</p>
+<p>Through our analyses, we were able to explore a lot of different variables and associations to answer our initial questions about potential gender inequity both in terms of paid and unpaid labor on a global scale.</p>
+<p>After conducting exploratory analyses, we conducted a linear regression analysis, combining several of the covariates into a model to assess their correlation with the proportion of unpaid time amongst women in OECD countries. Though none of these covariates emerged as statistically significant predictors, we evaluated the direction of the coefficients as suggestive of potential trends in the data. A significant limitation of our linear regression model is the omission of significant predictors (such as income, educational status and age) from our dataset.</p>
+<p>We also developed several map visualizations to visually elucidate any country or regional trends. The map analyses demonstrated that in countries where women spend more time in unpaid work, men usually spend more time in paid work. Women may also have less representation in leadership positions in countries where they spend more time in unpaid work compared to men and / or countries where men spend more time in paid work compared to women.</p>
+<p>Next, we conducted a regression tree analysis to predict percentage of time of total labor spent in unpaid work based on other demographic and employment metrics. We concluded that sex is the primary predictor of percentage of total labor spent in unpaid work in the regression tree, with the model predicting a higher median percentage among females than males. Other key predictors of the outcome are the labor force participation and percentage of individuals with part-time work in the country. While the model is limited by small sample size and potential discrepancies in “latest year” reported by each country, it provides directional insights on employment-related variables that can predict time spent in unpaid work.</p>
+<p>Our next analysis leveraged machine learning to create models that can predict the total length of paid maternity and parental leave given year, country, and other measures related to women in the workforce and in policy making positions. We compared three models: a logistic regression model, a k nearest neighbors model, and a naive bayes model, and found that if we want to predict whether a country would have more or less than 18 weeks of total paid parental leave given the year, labor force ratio of men/women, female representation in parliament, and female share of board seats, we would want to select the k nearest neighbors model (k = 8), as this model gives us the best sensitivity and specificity at almost every cutoff point.</p>
+<p>Lastly, we created a Shiny app to explore labor force participation by sex and female leadership positions over time. The trends in labor force participation over time by sex vary substantially by country and age group. However, in most countries, males tend to have a higher labor force participation compared to females, though the difference in participation rate tends to decrease over time. Female labor force participation rate seems to be positively correlated with female share of seats in national parliament, female share of seats on boards of the largest publicly listed companies, and female share of employed who are managers. In general, all percentages seem to increase over time, though substantial country-specific variation exists.</p>
 </div>
 </div>
 
