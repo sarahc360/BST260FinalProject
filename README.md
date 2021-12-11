@@ -20,12 +20,12 @@ Our repository contains our data file and several RMD files containing our analy
 
 ### Website & Screencast Links:
 
-- Website:
-- Screencast:https://youtu.be/R4W3pVbqdto
+- [Website](https://sites.google.com/view/bst260-offtheclock/home)
+- [Screencast](https://youtu.be/R4W3pVbqdto)
 
 ### Overview and Motivation
 
-Gender inequality, a widely prevalent social phenomenon, has risen to the forefront of global discussion after the COVID- 19 pandemic. An article published by UN women (https://data.unwomen.org/sites/default/files/inline-files/Whose-time-to-care-brief_0.pdf) states that while women already spent about three times as many hours in unpaid domestic work than men, the pandemic has exacerbated this gap. During the pandemic, women spent more hours in care and domestic work. Women were also more likely than men to leave the workforce , potentially as a consequence of increased workloads. 
+Gender inequality, a widely prevalent social phenomenon, has risen to the forefront of global discussion after the COVID- 19 pandemic. An article published by [UN women](https://data.unwomen.org/sites/default/files/inline-files/Whose-time-to-care-brief_0.pdf) states that while women already spent about three times as many hours in unpaid domestic work than men, the pandemic has exacerbated this gap. During the pandemic, women spent more hours in care and domestic work. Women were also more likely than men to leave the workforce , potentially as a consequence of increased workloads. 
 
 While some countries tried to reduce the burden of women by offering cash benefits and care facilities, data shows that an overwhelming percentage of the worlds women and girls will be facing impoverished conditions as a result of the pandemic. 
 
@@ -33,7 +33,7 @@ Through this project we want to get a better understanding of the economic disad
 
 ### Related Work
 
-Our motivation for this project was the article (link provided above) published by UN Women which dives deep into disparities in unpaid domestic work as a result of the COVID pandemic and an interactive dashboard (https://interactive.unwomen.org/multimedia/explainer/unpaidcare/en/index.html?gclid=CjwKCAiA78aNBhAlEiwA7B76p5E1YtiUgfS3TnuIViVn56UPe4krtgSfQtNlM2G8TeP2Od7f5VzjPRoCCJgQAvD_BwE) which allows individuals to calculate the amount of time they spend on unpaid domestic and care tasks and how that compares to the global average. 
+Our motivation for this project was the article (link provided above) published by UN Women which dives deep into disparities in unpaid domestic work as a result of the COVID pandemic and an interactive [dashboard](https://interactive.unwomen.org/multimedia/explainer/unpaidcare/en/index.html?gclid=CjwKCAiA78aNBhAlEiwA7B76p5E1YtiUgfS3TnuIViVn56UPe4krtgSfQtNlM2G8TeP2Od7f5VzjPRoCCJgQAvD_BwE) which allows individuals to calculate the amount of time they spend on unpaid domestic and care tasks and how that compares to the global average. 
 
 ### Initial Questions
 
@@ -47,7 +47,7 @@ Over the course of the project, we also incorporated analyses for the following 
 
 ### Data
 
-We used publicly available data from the Organization for Economic Co-operation and Development (OECD)  (https://stats.oecd.org/index.aspx?queryid=54757) in our analyses. These data include country-level measurements collected annually (and, in some cases, quarterly) on a number of variables ranging from “time spent in unpaid work” to “female share of seats on boards of the largest publicly listed companies”. (An exhaustive list of variables used can be found below). Queries for variables of interest were selected for on the OECD website in addition to variable measurements for time (1970-present, including some years divided out quarterly), sex (male, female), and age (categories: total, 15+, 55+, 15-24, 15-64, 25-64, and 55-64). The final query was downloaded as comma separated value files (.csv files) and read into R Studio resulting in a single, long-format dataframe. Duplicate variables were dropped, and an OECD country label was added as a separate variable to the dataframe. This allowed us to analyze results only within OECD countries and to compare OECD countries against non-OECD countries. By design, further analysis on this dataframe required individuals to filter by variables of interest and convert data to wide format prior to running analyses. 
+We used publicly available data from the Organization for Economic Co-operation and Development [OECDdata](https://stats.oecd.org/index.aspx?queryid=54757) in our analyses. These data include country-level measurements collected annually (and, in some cases, quarterly) on a number of variables ranging from “time spent in unpaid work” to “female share of seats on boards of the largest publicly listed companies”. (An exhaustive list of variables used can be found below). Queries for variables of interest were selected for on the OECD website in addition to variable measurements for time (1970-present, including some years divided out quarterly), sex (male, female), and age (categories: total, 15+, 55+, 15-24, 15-64, 25-64, and 55-64). The final query was downloaded as comma separated value files (.csv files) and read into R Studio resulting in a single, long-format dataframe. Duplicate variables were dropped, and an OECD country label was added as a separate variable to the dataframe. This allowed us to analyze results only within OECD countries and to compare OECD countries against non-OECD countries. By design, further analysis on this dataframe required individuals to filter by variables of interest and convert data to wide format prior to running analyses. 
 
 #### Variables
 
